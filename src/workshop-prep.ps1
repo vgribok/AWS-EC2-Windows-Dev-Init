@@ -1,8 +1,8 @@
-# Main script implementing with system preparation flow.
-# 
-
+# Main script orchestrating system preparation flow.
 # Requirements: 
 #   Git installed and configured
+#   AWS Tools for PowerShell installed
+
 param(
     [string] $workDirectory = "~/AWS-workshop-assets",
     [System.Boolean] $isDebug = $false,
@@ -17,12 +17,11 @@ param(
 
 # Include scripts with utility functions
 . ./git.ps1
-
-# Reset user password to counteract AWS initialization scrips
-& ./reset-password.ps1 -username $systemUserName -password $systemSecretWord -isDebug $isDebug
+. ./aws.ps1
 
 Push-Location
 
+#
 mkdir $workDirectory -ErrorAction SilentlyContinue
 
 # Get sample app source from GitHub
@@ -43,3 +42,11 @@ if($IsWindows)
 }
 
 Pop-Location
+
+# Re-setting EC2 instance
+InitializeEC2Instance
+
+# Reset user password to counteract AWS initialization scrips
+& ./reset-password.ps1 -username $systemUserName -password $systemSecretWord -isDebug $isDebug
+
+CreateAwsUser -isAdmin $true
