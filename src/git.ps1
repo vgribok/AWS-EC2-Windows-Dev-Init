@@ -24,3 +24,17 @@ function GitCloneAndCheckout {
 
     return $projectDirectoryName
 }
+
+function ConfigureCodeCommit {
+    param (
+        [Parameter(Mandatory=$true)] [string] $gitUsername,
+        [string] $gitUserEmail = "fakeuser@codecommit.aws",
+        [string] $scope = "--system",
+        [string] $helper = "!aws codecommit credential-helper $@"
+    )
+    
+    git config $scope credential.helper $helper | Out-Host
+    git config $scope credential.UseHttpPath true | Out-Host
+    git config $scope user.email $gitUserEmail | Out-Host
+    git config --system user.name $gitUsername | Out-Host
+}
