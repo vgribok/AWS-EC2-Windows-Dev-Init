@@ -1,6 +1,6 @@
 # Most scripts needed for the task at hand live in GitHub.
-# This minimal script, however, can be started on system startup.
-# This script should be copied to target system separately from teh rest,
+# This minimal, self-contained script, however, can be started on system startup.
+# This script should be copied to target system separately from the rest,
 # while the rest of the scripts will be bootsrapped from GitHub.
 
 param(

@@ -1,5 +1,6 @@
-function DirectoryNameFromGitHubUrl([string] $gitHubUrl)
-{
+function DirectoryNameFromGitHubUrl {
+    param ([string] $gitHubUrl)
+
     [string] $gitUrlNoSuffix = if($gitHubUrl.ToLowerInvariant().EndsWith(".git")) { $gitHubUrl.Substring(0, $gitHubUrl.Length - ".git".Length) } else { $gitHubUrl }
     [string[]] $urlSegments = ([Uri]$gitUrlNoSuffix).Segments
     [string] $projectDirectoryName = $urlSegments[-1]
