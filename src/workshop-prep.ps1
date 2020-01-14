@@ -25,7 +25,7 @@ Import-Module awspowershell.netcore
 . ./aws.ps1
 
 # Retrieve Region name, like us-east-1, from EC2 instance metadata
-$awsRegion = GetCurrentAwsRegionSystemName
+[string] $awsRegion = GetDefaultAwsRegionName
 
 Push-Location
 
@@ -70,4 +70,4 @@ refreshenv
 
 # Integrate Git and CodeCommit
 New-IAMServiceSpecificCredential -UserName $iamUserName -ServiceName codecommit.amazonaws.com
-ConfigureCodeCommit -gitUsername $iamUserName
+ConfigureCodeCommit -gitUsername $iamUserName -projectRootDirPath $sampleAppPath

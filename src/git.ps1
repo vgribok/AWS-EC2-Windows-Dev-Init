@@ -28,13 +28,31 @@ function GitCloneAndCheckout {
 function ConfigureCodeCommit {
     param (
         [Parameter(Mandatory=$true)] [string] $gitUsername,
+        [string] $projectRootDirPath,
+        [string] $scope,
         [string] $gitUserEmail = "fakeuser@codecommit.aws",
-        [string] $scope = "--system",
         [string] $helper = "!aws codecommit credential-helper $@"
     )
     
+    Push-Location
+
+    if($projectRootDirPath)
+    {
+        Set-Location $projectRootDirPath
+
+        if(-Not $scope)
+        {
+            $scope = "--local"
+        }
+    }elseif(-Not $scope)
+    {
+        $scope = "--global"
+    }
+
     git config $scope credential.helper $helper | Out-Host
     git config $scope credential.UseHttpPath true | Out-Host
     git config $scope user.email $gitUserEmail | Out-Host
-    git config --system user.name $gitUsername | Out-Host
+    git config $scope user.name $gitUsername | Out-Host
+
+    Pop-Location
 }
