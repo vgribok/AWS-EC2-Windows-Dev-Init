@@ -38,7 +38,7 @@ if ($bootstrapDebug)
     Set-Location $scriptDirectoryName
     git checkout $scriptBranchName
     git pull
-    Write-Host "Checled out and pulled `"$scriptBranchName`" branch"
+    Write-Host "Checked out and pulled `"$scriptBranchName`" branch"
 
     & ./src/workshop-prep.ps1 `
         -isDebug $bootstrapDebug -labName $labName `

@@ -194,6 +194,8 @@ function CreateCodeCommitGitCredentials {
         [int] $codeCommitCredCreationDelaySeconds = 10 
         )
 
+    RemoveCodeCommitCredentialsForIamUser($iamUserName)
+
     if($codeCommitCredCreationDelaySeconds -gt 0)
     {
         # It appears there's a race condition prevernting CodeCommit credentials 
