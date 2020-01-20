@@ -196,7 +196,7 @@ function CreateCodeCommitGitCredentials {
     {
         # It appears there's a race condition prevernting CodeCommit credentials 
         # from being created right after user is created
-        Write-Host "Going to sleep for $codeCommitCredCreationDelaySeconds seconds before creating CodeCommit credentials to work arounda race condition"
+        Write-Host "Going to sleep for $codeCommitCredCreationDelaySeconds seconds before creating CodeCommit credentials to work around a race condition"
         Start-Sleep -Seconds $codeCommitCredCreationDelaySeconds 
     }
 

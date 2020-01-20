@@ -39,11 +39,12 @@ Write-Host "Current AWS region metadata is determined to be `"$awsRegion`""
 Push-Location
 
 mkdir $workDirectory -ErrorAction SilentlyContinue
-Write-Host "Creaeted directory `"$workDirectory`""
+Write-Host "Created directory `"$workDirectory`""
 
 # Get sample app source from GitHub
 Set-Location $workDirectory
-[string] $sampleAppDirectoryName = (GitCloneAndCheckout -gitHubUrl $sampleAppGitHubUrl -gitBranchName $sampleAppGitBranchName)[-1]
+$retVal = GitCloneAndCheckout -remoteGitUrl $sampleAppGitHubUrl -gitBranchName $sampleAppGitBranchName
+[string] $sampleAppDirectoryName = CleanupRetVal($retVal) 
 [string] $sampleAppPath = "$workDirectory/$sampleAppDirectoryName"
 
 # Build sample app
@@ -60,7 +61,7 @@ if($IsWindows)
 {
     Write-Host "Bringing down stuff from `"$vsLicenseScriptGitHubUrl`""
     Set-Location $workDirectory
-    [string] $vsLicenseScriptDirectory = GitCloneAndCheckout -gitHubUrl $vsLicenseScriptGitHubUrl
+    [string] $vsLicenseScriptDirectory = GitCloneAndCheckout -remoteGitUrl $vsLicenseScriptGitHubUrl
     Import-Module "$workDirectory/$vsLicenseScriptDirectory"
     Set-VSCELicenseExpirationDate -Version $vsVersion
 }
@@ -81,7 +82,7 @@ CreateAwsUser -iamUserName $iamUserName -isAdmin $true
 
 # Create access key so that user could be logged to enable AWS, CLI, PowerShell and AWS Tookit
 $retVal = CreateAccessKeyForIamUser -iamUserName $iamUserName -removeAllExistingAccessKeys $true
-$awsAccessKeyInfo = $retVal[-1]
+$awsAccessKeyInfo = CleanupRetVal($retVal)
 
 # Create credentials for both AWS CLI and AWS SDK/VS Toolkit
 ConfigureIamUserCredentialsOnTheSystem -accessKeyInfo $awsAccessKeyInfo -awsRegion $awsRegion

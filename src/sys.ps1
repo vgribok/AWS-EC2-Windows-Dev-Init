@@ -37,3 +37,16 @@ function SetLocalUserPassword {
         setWindowsUserPassword -username $username -password $securePassword
     }
 }
+
+function CleanupRetVal {
+    param (
+        $retVal
+    )
+    
+    if($retVal -and ($retVal -is [Array]))
+    {
+        return $retVal[-1]
+    }
+
+    return $retVal
+}
