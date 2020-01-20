@@ -18,7 +18,9 @@ ConfigureCurrentAwsRegion
 RemoveCodeCommitCredentialsForIamUser($iamUserName)
 RemoveAccessKeyCredentialsFromTheSystem
 RemoveAllAccessKeysForIamUser($iamUserName)
+
 Unregister-IAMUserPolicy -UserName $iamUserName -PolicyArn "arn:aws:iam::aws:policy/AdministratorAccess"
+Write-Host "Detached `"AdministratorAccess`" policy from IAM user `"$iamUserName`""
+
 Remove-IAMUser -UserName $iamUserName -Force
-
-
+Write-Host "Deleted IAM user `"$iamUserName`""
