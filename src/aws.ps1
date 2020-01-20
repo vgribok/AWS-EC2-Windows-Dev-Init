@@ -1,3 +1,8 @@
+<#
+A component scripts to be included into your executable script.
+Enables several high-level AWS functions.
+#>
+
 Import-Module awspowershell.netcore # Todo: add this to system's PowerShell profile
 
 function EnsureArray {

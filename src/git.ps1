@@ -1,3 +1,8 @@
+<#
+A component scripts to be included into your executable script.
+Enables several high-level Git functions.
+#>
+
 function DirectoryNameFromGitHubUrl {
     param ([string] $gitHubUrl)
 

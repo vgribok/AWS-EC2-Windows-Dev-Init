@@ -1,7 +1,8 @@
-# Most scripts needed for the task at hand live in GitHub.
-# This minimal, self-contained script, however, can be started on system startup.
-# This script should be copied to target system separately from the rest,
-# while the rest of the scripts will be bootsrapped from GitHub.
+<#
+A self-contained executable scripts that gets EC2 dev box initialization scripts from GitHub and runs them.
+Feel free to modify this script on EC2 (not on your dev box!), at C:\aws-ec2-lab-dev-box-bootstrap.ps1 on Windows,
+to get a sample app from a different remote Git location.
+#> 
 
 param(
     # Top group of parameters will change from one lab to another

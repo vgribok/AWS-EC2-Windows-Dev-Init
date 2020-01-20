@@ -1,3 +1,8 @@
+<#
+A component scripts to be included into your executable script.
+Enables several high-level operating system and file system functions.
+#>
+
 function setWindowsUserPassword {
     param (
         [string] $username,

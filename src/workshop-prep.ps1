@@ -1,4 +1,4 @@
-# Main script orchestrating system preparation flow.
+# Main executable script orchestrating EC2 preparation flow for serving as Windows dev box.
 # Requirements: 
 #   Git installed and configured
 #   AWS Tools for PowerShell installed
