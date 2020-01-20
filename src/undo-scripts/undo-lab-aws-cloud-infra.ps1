@@ -17,5 +17,5 @@ Pop-Location
 ConfigureCurrentAwsRegion
 DeleteCfnStacks($workshopCfnStack)
 
-Remove-ECRRepository -RepositoryName $ecrRepoName -Force -ErrorAction SilentlyContinue
+Remove-ECRRepository -RepositoryName $ecrRepoName -IgnoreExistingImages $true -Force -ErrorAction SilentlyContinue
 Write-Host "Removed ECR repository `"$ecrRepoName`""

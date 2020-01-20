@@ -1,3 +1,5 @@
+Import-Module awspowershell.netcore # Todo: add this to system's PowerShell profile
+
 function EnsureArray {
     param (
         $arg
