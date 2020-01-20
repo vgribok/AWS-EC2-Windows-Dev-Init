@@ -29,3 +29,5 @@ Set-Location $scriptLocation
 . ./undo-lab-credentials.ps1 -labName $labName -tempIamUserPrefix $tempIamUserPrefix
 
 Pop-Location
+
+"Workshop cleanup is completed to the best of authors' ability, but please don't take our word for it still take a look around in AWS Console!"
