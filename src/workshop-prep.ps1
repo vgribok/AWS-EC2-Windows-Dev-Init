@@ -39,8 +39,7 @@ Write-Host "Current AWS region metadata is determined to be `"$awsRegion`""
 Push-Location
 
 mkdir $workDirectory -ErrorAction SilentlyContinue
-Write-Host "Creaeneccccbfnflucndirltbbhcuuicrvrdklbrjbltblbi
-ted directory `"$workDirectory`""
+Write-Host "Creaeted directory `"$workDirectory`""
 
 # Get sample app source from GitHub
 Set-Location $workDirectory
