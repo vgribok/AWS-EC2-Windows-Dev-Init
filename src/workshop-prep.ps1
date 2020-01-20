@@ -71,7 +71,7 @@ Pop-Location
 # Re-setting EC2 instance to AWS defaults
 Write-Host "Starting standard AWS EC2 instance initialization"
 # This launches somewhat long-running AWS instance initialization scripts that gets stuck at 
-# FDISK (scary! I know) for a little bit. Just let it finish, don't worry about it.
+# DISKPART (scary! I know) for a little bit. Just let it finish, don't worry about it.
 InitializeEC2Instance 
 Write-Host "Finished standard AWS EC2 instance initialization"
 
@@ -93,3 +93,5 @@ refreshenv
 # Integrate Git and CodeCommit
 CreateCodeCommitGitCredentials -iamUserName $iamUserName -codeCommitCredCreationDelaySeconds $codeCommitCredCreationDelaySeconds
 ConfigureGitSettings -gitUsername $iamUserName -projectRootDirPath $sampleAppPath -helper "!aws codecommit credential-helper $@"
+
+"Workshop dev box initialization has finished"
