@@ -6,7 +6,10 @@ param(
 Import-Module awspowershell.netcore
 
 # Include scripts with utility functions
+Push-Location
+Set-Location ([System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Path))
 . ../aws.ps1
+Pop-Location
 
 ConfigureCurrentAwsRegion
 

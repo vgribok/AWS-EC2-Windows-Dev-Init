@@ -1,14 +1,18 @@
 param(
     [string] $workDirectory = "~/AWS-workshop-assets",
-    [string] $sampleAppGitHubUrl = "https://github.com/vgribok/modernization-unicorn-store.git"
+    [string[]] $gitUrls = @(
+        "https://github.com/vgribok/modernization-unicorn-store.git",
+        "https://github.com/vgribok/VSCELicense.git"
+    )
 )
 
-. ../git.ps1
-
 Push-Location
-
-Set-Location $workDirectory
-[string] $sampleAppDirectoryName = DirectoryNameFromGitHubUrl -gitHubUrl $sampleAppGitHubUrl
-Remove-Item -Recurse -Force $sampleAppDirectoryName -ErrorAction SilentlyContinue
-
+Set-Location ([System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Path))
+. ../git.ps1
 Pop-Location
+
+foreach ($gitUrl in $gitUrls) 
+{
+    [string] $gitRepoDirectory = DirectoryNameFromGitHubUrl -gitHubUrl $gitUrl
+    Remove-Item -Recurse -Force "$workDirectory/$gitRepoDirectory" -ErrorAction SilentlyContinue
+}

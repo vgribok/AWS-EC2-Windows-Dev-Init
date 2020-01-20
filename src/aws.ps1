@@ -51,23 +51,18 @@ function CreateAwsUser {
         $iamUserName += "-$instanceId"
     }
 
-    $savedErrorActionPref = $ErrorActionPreference
-    $ErrorActionPreference = "SilentlyContinue"
-    try {
-        # It looks like AWS PowerShell cmdlets do not support "-ErrorAction" parameter
-        New-IAMUser -UserName $iamUserName -ErrorAction SilentlyContinue
-    }
-    finally {
-        $ErrorActionPreference = $savedErrorActionPref
-    }
+    New-IAMUser -UserName $iamUserName -ErrorAction SilentlyContinue
+    Write-Host "Created AWS IAM user `"$iamUserName`""
 
     if($isAdmin)
     {
         Register-IAMUserPolicy -UserName $iamUserName -PolicyArn "arn:aws:iam::aws:policy/AdministratorAccess"
+        Write-Host "Attached `"AdministratorAccess`" policy to IAM user `"$iamUserName`""
     }
 
     return $iamUserName
 }
+
 
 function GetDefaultAwsRegionName 
 {
@@ -82,11 +77,13 @@ function ConfigureCurrentAwsRegion {
 
     if(-Not $awsRegion)
     {
-        $awsRegion = GetCurrentAwsRegionSystemName
+        $awsRegion = GetDefaultAwsRegionName
     }
 
-    Initialize-AWSDefaultConfiguration -ProfileName default -Region $awsRegion
     aws configure set region $awsRegion | Out-Host
+    Initialize-AWSDefaultConfiguration -ProfileName default -Region $awsRegion
+
+    Write-Host "Set current AWS region to `"$awsRegion`""
 }
 
 function ConfigureIamUserCredentialsOnTheSystem {
@@ -95,15 +92,17 @@ function ConfigureIamUserCredentialsOnTheSystem {
         [string] $awsRegion
     )
 
-    ConfigureCurrentAwsRegion($awsRegion)
-
     # Store credentials for AWS SDK and VS Toolkit
     Set-AWSCredential -AccessKey $accessKeyInfo.AccessKeyId -SecretKey $accessKeyInfo.SecretAccessKey -StoreAs default
+    Write-Host "Set user `"$($awsAccessKeyInfo.UserName)`" (AccessKey `"$($accessKeyInfo.AccessKeyId)`") as current for AWS SDK and Visual Studio Toolkit"
+
+    ConfigureCurrentAwsRegion($awsRegion)
 
     # Store credentials in ~/.aws "credentials" and "config" files
     aws configure set aws_access_key_id $accessKeyInfo.AccessKeyId | Out-Host
     aws configure set aws_secret_access_key $accessKeyInfo.SecretAccessKey | Out-Host
     aws configure set output json | Out-Host
+    Write-Host "Set user `"$($awsAccessKeyInfo.UserName)`" (AccessKey `"$($accessKeyInfo.AccessKeyId)`") as current for `"aws`" cli"
 }
 
 function DeleteCfnStack {
@@ -112,7 +111,7 @@ function DeleteCfnStack {
     )
     
     Remove-CFNStack -StackName $cfnStackName -Force
-    Write-Debug "Startign deletion of the `"$cfnStackName`" CloudFormation stack"
+    Write-Host "Starting deletion of the `"$cfnStackName`" CloudFormation stack"
 }
 
 function DeleteCfnStacks {
@@ -137,16 +136,21 @@ function RemoveCodeCommitCredentialsForIamUser {
     foreach($cred in $codeCommitCredentials)
     {
         Remove-IAMServiceSpecificCredential -UserName $iamUserName -ServiceSpecificCredentialId $cred.ServiceSpecificCredentialId -Force
+        Write-Host "Removed CodeCommit credentials for service user `"$($cred.ServiceSpecificCredentialId)`" (IAM user `"$iamUserName`")"
     }
 }
 
 function RemoveAccessKeyCredentialsFromTheSystem {
     if($IsWindows)
     {   # Removes AWS SDK and VS Toolkit credentials created by the Set-AWSCredential cmdlet
-        Remove-Item "$($env:LOCALAPPDATA)/AWSToolkit/RegisteredAccounts.json" -Force -ErrorAction SilentlyContinue
+        [string] $awsSdkCredFilePath = "$($env:LOCALAPPDATA)/AWSToolkit/RegisteredAccounts.json"
+        Remove-Item $awsSdkCredFilePath -Force -ErrorAction SilentlyContinue
+        Write-Host "Deleted AWS credentials file for AWS SDK: `"$awsSdkCredFilePath`""
     }
     # Remove credentials created using "aws configure" CLI
     Remove-Item -Recurse -Force "~/.aws" -ErrorAction SilentlyContinue
+    Write-Host "Deleted `"~/.aws`" directory with AWS user credentials"
+
     refreshenv 
 }
 
@@ -161,5 +165,43 @@ function RemoveAllAccessKeysForIamUser {
     foreach ($accessKey in $accessKeyInfo) 
     {
         Remove-IAMAccessKey -UserName $iamUserName -AccessKeyId $accessKey.AccessKeyId -Force
+        Write-Host "Removed AWS AccessKey `"$($accessKey.AccessKeyId)`" for IAM user `"$iamUserName`""
     }
+}
+
+function CreateAccessKeyForIamUser {
+    param (
+        [Parameter(mandatory=$true)] [string] $iamUserName,
+        [bool] $removeAllExistingAccessKeys = $true
+    )
+   
+    if($removeAllExistingAccessKeys)
+    {
+        RemoveAllAccessKeysForIamUser($iamUserName) # Remove existing AccessKeys if any were left, to not run into two AccessKeys limit
+    }
+
+    $awsAccessKeyInfo = New-IAMAccessKey $iamUserName
+    Write-Host "Created new AWS AccessKey `"$($awsAccessKeyInfo.AccessKeyId)`" for IAM user `"$iamUserName`""
+
+    return $awsAccessKeyInfo
+}
+
+function CreateCodeCommitGitCredentials {
+    param (
+        [Parameter(mandatory=$true)] [string] $iamUserName,
+        [int] $codeCommitCredCreationDelaySeconds = 10 
+        )
+
+    if($codeCommitCredCreationDelaySeconds -gt 0)
+    {
+        # It appears there's a race condition prevernting CodeCommit credentials 
+        # from being created right after user is created
+        Write-Host "Going to sleep for $codeCommitCredCreationDelaySeconds seconds before creating CodeCommit credentials to work arounda race condition"
+        Start-Sleep -Seconds $codeCommitCredCreationDelaySeconds 
+    }
+
+    $codeCommitCreds = New-IAMServiceSpecificCredential -UserName $iamUserName -ServiceName codecommit.amazonaws.com
+    Write-Host "Created CodeCommit credentials with service user name `"$($codeCommitCreds.ServiceUserName)`" for IAM user `"$iamUserName`""
+
+    return $codeCommitCreds
 }

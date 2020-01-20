@@ -9,13 +9,13 @@ function DirectoryNameFromGitHubUrl {
 
 function GitCloneAndCheckout {
     param (
-        [Parameter(mandatory=$true)] [string] $gitHubUrl,
+        [Parameter(mandatory=$true)] [string] $remoteGitUrl,
         [string] $gitBranchName = "master"
     )
 
-    [string] $projectDirectoryName = DirectoryNameFromGitHubUrl($gitHubUrl)
+    [string] $projectDirectoryName = DirectoryNameFromGitHubUrl($remoteGitUrl)
 
-    git clone $gitHubUrl | Out-Host # Piping output to Host removes retruned result pollution
+    git clone $remoteGitUrl | Out-Host # Piping output to Host removes retruned result pollution
     
     Push-Location
     Set-Location $projectDirectoryName
@@ -23,16 +23,19 @@ function GitCloneAndCheckout {
     git pull | Out-Host
     Pop-Location
 
+    Write-Host "Cloned `"$remoteGitUrl`" Git repo to `"$projectDirectoryName`" directory and checked out & pulled `"$gitBranchName`" branch" 
+
     return $projectDirectoryName
 }
 
-function ConfigureCodeCommit {
+function ConfigureGitSettings {
     param (
         [Parameter(Mandatory=$true)] [string] $gitUsername,
         [string] $projectRootDirPath,
         [string] $scope,
-        [string] $gitUserEmail = "fakeuser@codecommit.aws",
-        [string] $helper = "!aws codecommit credential-helper $@"
+        [string] $gitUserEmail = "fakeuser@acme.com",
+        [string] $helper,
+        [bool] $useHttp = $true
     )
     
     Push-Location
@@ -50,10 +53,22 @@ function ConfigureCodeCommit {
         $scope = "--global"
     }
 
-    git config $scope credential.helper $helper | Out-Host
-    git config $scope credential.UseHttpPath true | Out-Host
+    if($helper)
+    {
+        git config $scope credential.helper $helper | Out-Host
+        Write-Host "Configured $($scope.Trim('-')) Git authentication helper for project `"$projectRootDirPath`""
+    }
+
+    if($useHttp)
+    {
+        git config $scope credential.UseHttpPath $useHttp | Out-Host
+        Write-Host "Configured $($scope.Trim('-')) Git `"UseHttpPath=$useHttp`" for project `"$projectRootDirPath`""
+    }
+
     git config $scope user.email $gitUserEmail | Out-Host
     git config $scope user.name $gitUsername | Out-Host
+
+    Write-Host "Configured $($scope.Trim('-')) Git settings (user `"$gitUsername`", email `"$gitUserEmail`") for project `"$projectRootDirPath`""
 
     Pop-Location
 }

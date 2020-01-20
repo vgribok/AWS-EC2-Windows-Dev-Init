@@ -9,16 +9,22 @@
             "type": "PowerShell",
             "request": "launch",
             "script": "${file}",
-            "cwd": "${file}"
         },
         {
             "name": "Launch bootstrap.ps1",
             "type": "PowerShell",
             "request": "launch",
             "script": "${workspaceFolder}/src/aws-ec2-lab-dev-box-bootstrap.ps1",
-            "cwd": "${workspaceFolder}/src",
             "args": [
                 "-bootstrapDebug", "$true"
+            ]   
+        },
+        {
+            "name": "Undo everything",
+            "type": "PowerShell",
+            "request": "launch",
+            "script": "${workspaceFolder}/src/undo-scripts/undo-lab-everything.ps1",
+            "args": [
             ]   
         }
     ]
