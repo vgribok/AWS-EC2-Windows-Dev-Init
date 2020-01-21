@@ -34,12 +34,12 @@ Pop-Location
 
 # Retrieve Region name, like us-east-1, from EC2 instance metadata
 [string] $awsRegion = GetDefaultAwsRegionName
-Write-Host "Current AWS region metadata is determined to be `"$awsRegion`""
+Write-Information "Current AWS region metadata is determined to be `"$awsRegion`""
 
 Push-Location
 
 mkdir $workDirectory -ErrorAction SilentlyContinue
-Write-Host "Created directory `"$workDirectory`""
+Write-Information "Created directory `"$workDirectory`""
 
 # Get sample app source from GitHub
 Set-Location $workDirectory
@@ -49,16 +49,16 @@ $retVal = GitCloneAndCheckout -remoteGitUrl $sampleAppGitHubUrl -gitBranchName $
 
 # Build sample app
 Set-Location $sampleAppPath
-Write-Host "Starting building `"$sampleAppSolutionFileName`""
+Write-Information "Starting building `"$sampleAppSolutionFileName`""
 dotnet build $sampleAppSolutionFileName -c DebugPostgres
-Write-Host "Finished building `"$sampleAppSolutionFileName`""
+Write-Information "Finished building `"$sampleAppSolutionFileName`""
 
 AddCodeCommitGitRemote -awsRegion $awsRegion -codeCommitRepoName $codeCommitRepoName
 
 # Update Visual Studio Community License
 if($IsWindows)
 {
-    Write-Host "Bringing down stuff from `"$vsLicenseScriptGitHubUrl`""
+    Write-Information "Bringing down stuff from `"$vsLicenseScriptGitHubUrl`""
     Set-Location $workDirectory
     [string] $vsLicenseScriptDirectory = GitCloneAndCheckout -remoteGitUrl $vsLicenseScriptGitHubUrl
     Import-Module "$workDirectory/$vsLicenseScriptDirectory"
@@ -68,11 +68,11 @@ if($IsWindows)
 Pop-Location
 
 # Re-setting EC2 instance to AWS defaults
-Write-Host "Starting standard AWS EC2 instance initialization"
+Write-Information "Starting standard AWS EC2 instance initialization"
 # This launches somewhat long-running AWS instance initialization scripts that gets stuck at 
 # DISKPART (scary! I know) for a little bit. Just let it finish, don't worry about it.
 InitializeEC2Instance 
-Write-Host "Finished standard AWS EC2 instance initialization"
+Write-Information "Finished standard AWS EC2 instance initialization"
 
 # Reset user password to counteract AWS initialization scrips
 SetLocalUserPassword -username $systemUserName -password $systemSecretWord -isDebug $isDebug

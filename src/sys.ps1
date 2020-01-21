@@ -20,7 +20,7 @@ function setWindowsUserPassword {
     try {
         $WhatIfPreference = $isDebug
         Set-LocalUser -Name $username -Password $password
-        Write-Host "Updated password for Windows user `"$username`""
+        Write-Information "Updated password for Windows user `"$username`""
     }
     finally
     {

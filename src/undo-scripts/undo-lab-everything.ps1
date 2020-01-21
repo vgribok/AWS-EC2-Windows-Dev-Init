@@ -20,14 +20,15 @@ Push-Location
 $scriptLocation = [System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Path)
 
 Set-Location $scriptLocation
-. ./undo-lab-sample-app-project.ps1 -workDirectory $workDirectory -gitUrls $gitUrls
+. ./undo-lab-sample-app-project.ps1 -workDirectory $workDirectory -gitUrls $gitUrls *> "../undo-script.log"
 
 Set-Location $scriptLocation
-. ./undo-lab-aws-cloud-infra.ps1 -ecrRepoName $ecrRepoName -workshopCfnStack $workshopCfnStacks
+. ./undo-lab-aws-cloud-infra.ps1 -ecrRepoName $ecrRepoName -workshopCfnStack $workshopCfnStacks *>> "../undo-script.log"
 
 Set-Location $scriptLocation
-. ./undo-lab-credentials.ps1 -labName $labName -tempIamUserPrefix $tempIamUserPrefix
+. ./undo-lab-credentials.ps1 -labName $labName -tempIamUserPrefix $tempIamUserPrefix *>> "../undo-script.log"
+
+Set-Location $scriptLocation
+"Workshop cleanup is completed to the best of authors' ability, but please don't take our word for it still take a look around in AWS Console!" *>> "../undo-script.log"
 
 Pop-Location
-
-"Workshop cleanup is completed to the best of authors' ability, but please don't take our word for it still take a look around in AWS Console!"

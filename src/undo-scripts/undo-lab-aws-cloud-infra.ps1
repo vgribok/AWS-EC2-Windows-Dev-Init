@@ -18,4 +18,4 @@ ConfigureCurrentAwsRegion
 DeleteCfnStacks($workshopCfnStacks)
 
 Remove-ECRRepository -RepositoryName $ecrRepoName -IgnoreExistingImages $true -Force -ErrorAction SilentlyContinue
-Write-Host "Removed ECR repository `"$ecrRepoName`""
+Write-Information "Removed ECR repository `"$ecrRepoName`""

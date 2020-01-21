@@ -19,7 +19,7 @@ param(
     [System.Boolean] $bootstrapDebug = $false
 )
     
-Write-Host "Debugging: $bootstrapDebug"
+Write-Information "Debugging: $bootstrapDebug"
 
 Push-Location
 Set-Location ([System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Path))
@@ -34,17 +34,18 @@ if ($bootstrapDebug)
 {   # Execution path for actual production use
     Set-Location "~"
     git clone $scriptGitRepoUrl $scriptDirectoryName | Out-Host
-    Write-Host "Cloned `"$scriptGitRepoUrl`" remote Git repository to `"~/$scriptDirectoryName`" directory"
+    Write-Information "Cloned `"$scriptGitRepoUrl`" remote Git repository to `"~/$scriptDirectoryName`" directory"
 
     Set-Location $scriptDirectoryName
     git checkout $scriptBranchName
     git pull
-    Write-Host "Checked out and pulled `"$scriptBranchName`" branch"
+    Write-Information "Checked out and pulled `"$scriptBranchName`" branch"
 
     & ./src/workshop-prep.ps1 `
         -isDebug $bootstrapDebug -labName $labName `
         -sampleAppGitHubUrl $sampleAppGitHubUrl -sampleAppGitBranchName $sampleAppGitBranchName `
-        -sampleAppSolutionFileName $sampleAppSolutionFileName -codeCommitRepoName $codeCommitRepoName
+        -sampleAppSolutionFileName $sampleAppSolutionFileName -codeCommitRepoName $codeCommitRepoName `
+        *> "aws-workshop-init-script.log"
 }
 
 Pop-Location

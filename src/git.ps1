@@ -28,7 +28,7 @@ function GitCloneAndCheckout {
     git pull | Out-Host
     Pop-Location
 
-    Write-Host "Cloned `"$remoteGitUrl`" Git repo to `"$projectDirectoryName`" directory and checked out & pulled `"$gitBranchName`" branch" 
+    Write-Information "Cloned `"$remoteGitUrl`" Git repo to `"$projectDirectoryName`" directory and checked out & pulled `"$gitBranchName`" branch" 
 
     return $projectDirectoryName
 }
@@ -61,19 +61,19 @@ function ConfigureGitSettings {
     if($helper)
     {
         git config $scope credential.helper $helper | Out-Host
-        Write-Host "Configured $($scope.Trim('-')) Git authentication helper for project `"$projectRootDirPath`""
+        Write-Information "Configured $($scope.Trim('-')) Git authentication helper for project `"$projectRootDirPath`""
     }
 
     if($useHttp)
     {
         git config $scope credential.UseHttpPath $useHttp | Out-Host
-        Write-Host "Configured $($scope.Trim('-')) Git `"UseHttpPath=$useHttp`" for project `"$projectRootDirPath`""
+        Write-Information "Configured $($scope.Trim('-')) Git `"UseHttpPath=$useHttp`" for project `"$projectRootDirPath`""
     }
 
     git config $scope user.email $gitUserEmail | Out-Host
     git config $scope user.name $gitUsername | Out-Host
 
-    Write-Host "Configured $($scope.Trim('-')) Git settings (user `"$gitUsername`", email `"$gitUserEmail`") for project `"$projectRootDirPath`""
+    Write-Information "Configured $($scope.Trim('-')) Git settings (user `"$gitUsername`", email `"$gitUserEmail`") for project `"$projectRootDirPath`""
 
     Pop-Location
 }
@@ -89,5 +89,5 @@ function AddCodeCommitGitRemote {
 
     git remote remove $remoteName | Out-Host
     git remote add $remoteName "https://git-codecommit.$($awsRegion).amazonaws.com/v1/repos/$codeCommitRepoName" | Out-Host
-    Write-Host "Added `"$remoteName`" Git remote to the `"$sampleAppPath`" project"
+    Write-Information "Added `"$remoteName`" Git remote to the `"$sampleAppPath`" project"
 }
