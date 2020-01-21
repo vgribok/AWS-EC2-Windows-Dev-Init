@@ -3,7 +3,7 @@ param(
     [string] $labName = "dotnet-cdk",
     [string] $sampleAppGitHubUrl = "https://github.com/vgribok/modernization-unicorn-store.git",
     [string] $ecrRepoName = "unicorn-store-app",
-    [string[]] $workshopCfnStack = @(
+    [string[]] $workshopCfnStacks = @(
         "Unicorn-Store-CI-CD-PipelineStack",
         "UnicornSuperstoreStack"
     ),
@@ -23,7 +23,7 @@ Set-Location $scriptLocation
 . ./undo-lab-sample-app-project.ps1 -workDirectory $workDirectory -gitUrls $gitUrls
 
 Set-Location $scriptLocation
-. ./undo-lab-aws-cloud-infra.ps1 -ecrRepoName $ecrRepoName -workshopCfnStack $workshopCfnStack
+. ./undo-lab-aws-cloud-infra.ps1 -ecrRepoName $ecrRepoName -workshopCfnStack $workshopCfnStacks
 
 Set-Location $scriptLocation
 . ./undo-lab-credentials.ps1 -labName $labName -tempIamUserPrefix $tempIamUserPrefix

@@ -1,5 +1,5 @@
 param(
-    [string[]] $workshopCfnStack = @(
+    [string[]] $workshopCfnStacks = @(
         "Unicorn-Store-CI-CD-PipelineStack",
         "UnicornSuperstoreStack"
     ),
@@ -15,7 +15,7 @@ Set-Location ([System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Path))
 Pop-Location
 
 ConfigureCurrentAwsRegion
-DeleteCfnStacks($workshopCfnStack)
+DeleteCfnStacks($workshopCfnStacks)
 
 Remove-ECRRepository -RepositoryName $ecrRepoName -IgnoreExistingImages $true -Force -ErrorAction SilentlyContinue
 Write-Host "Removed ECR repository `"$ecrRepoName`""
