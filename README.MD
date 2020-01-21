@@ -16,13 +16,15 @@ Use at your own risk.
 
 ## How to Use
 
-Use these scripts for EC2 initialization and cleanup.
+Use these scripts for EC2 initialization and cleanup. Both scripts are idempotent, i.e. one does not have to run "undo" scripts before running "init" scripts, if something didn't work correctly.
 
 ### EC2 initialization
 
 * Copy [aws-ec2-lab-dev-box-bootstrap.ps1](./src/aws-ec2-lab-dev-box-bootstrap.ps1) file to the destination EC2 instance that has Role with the *AdministratorAccess* IAM policy. The IMA needs to have all prerequisite development tools installed: Visual Studio, SQL Server, PowerShell 6, AWS Toolkit, etc.
 * If your workshop sample app is on GitHub, you can modify top part (parameters) of the script to point to your sample app.
 * Run the script before the workshop. It will get latest versions of the rest of the scripts from GitHub.
+
+Re-Run the scripts if something didn't work, and create an issue in the [backlog](https://github.com/vgribok/AWS-EC2-Windows-Dev-Init/issues).
 
 Use Windows Task Scheduler to run this script on system startup in Windows user context that has administrator privileges. Use Windows Task Scheduler to disable default AWS initializtion script that runs on system startup. This set of scripts invokes AWS script.
 

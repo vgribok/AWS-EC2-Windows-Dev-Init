@@ -77,3 +77,17 @@ function ConfigureGitSettings {
 
     Pop-Location
 }
+
+function AddCodeCommitGitRemote {
+    param (
+        [string] $remoteName = "aws",
+        [Parameter(Mandatory=$true)] [string] $awsRegion,
+        [Parameter(Mandatory=$true)] [string] $codeCommitRepoName
+    )
+    
+    $sampleAppPath = Get-Location
+
+    git remote remove $remoteName | Out-Host
+    git remote add $remoteName "https://git-codecommit.$($awsRegion).amazonaws.com/v1/repos/$codeCommitRepoName" | Out-Host
+    Write-Host "Added `"$remoteName`" Git remote to the `"$sampleAppPath`" project"
+}

@@ -53,8 +53,7 @@ Write-Host "Starting building `"$sampleAppSolutionFileName`""
 dotnet build $sampleAppSolutionFileName -c DebugPostgres
 Write-Host "Finished building `"$sampleAppSolutionFileName`""
 
-git remote add aws "https://git-codecommit.$($awsRegion).amazonaws.com/v1/repos/$codeCommitRepoName" | Out-Host
-Write-Host "Added `"aws`" Git remote to the `"$sampleAppPath`" project"
+AddCodeCommitGitRemote -awsRegion $awsRegion -codeCommitRepoName $codeCommitRepoName
 
 # Update Visual Studio Community License
 if($IsWindows)
