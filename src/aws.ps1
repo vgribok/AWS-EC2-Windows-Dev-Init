@@ -199,8 +199,6 @@ function CreateCodeCommitGitCredentials {
         [int] $codeCommitCredCreationDelaySeconds = 10 
         )
 
-    RemoveCodeCommitCredentialsForIamUser($iamUserName)
-
     if($codeCommitCredCreationDelaySeconds -gt 0)
     {
         # It appears there's a race condition prevernting CodeCommit credentials 
@@ -208,6 +206,8 @@ function CreateCodeCommitGitCredentials {
         Write-Information "Going to sleep for $codeCommitCredCreationDelaySeconds seconds before creating CodeCommit credentials to work around a race condition"
         Start-Sleep -Seconds $codeCommitCredCreationDelaySeconds 
     }
+
+    RemoveCodeCommitCredentialsForIamUser($iamUserName)
 
     $codeCommitCreds = New-IAMServiceSpecificCredential -UserName $iamUserName -ServiceName codecommit.amazonaws.com
     Write-Information "Created CodeCommit credentials with service user name `"$($codeCommitCreds.ServiceUserName)`" for IAM user `"$iamUserName`""
