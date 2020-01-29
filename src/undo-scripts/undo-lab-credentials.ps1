@@ -11,7 +11,7 @@ Set-Location ([System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Path))
 . ../aws.ps1
 Pop-Location
 
-ConfigureCurrentAwsRegion
+ConfigureCurrentAwsRegion -profileName $null
 
 [string] $iamUserName = "$tempIamUserPrefix-$labName"
 

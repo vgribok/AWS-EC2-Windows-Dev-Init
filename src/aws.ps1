@@ -79,7 +79,8 @@ function GetDefaultAwsRegionName
 
 function ConfigureCurrentAwsRegion {
     param (
-        [string] $awsRegion
+        [string] $awsRegion,
+        [string] $profileName = "default"
     )
 
     if(-Not $awsRegion)
@@ -88,7 +89,13 @@ function ConfigureCurrentAwsRegion {
     }
 
     aws configure set region $awsRegion | Out-Host
-    Initialize-AWSDefaultConfiguration -ProfileName default -Region $awsRegion
+    if($profileName)
+    {
+        Initialize-AWSDefaultConfiguration -ProfileName $profileName -Region $awsRegion
+    }else 
+    {
+        Initialize-AWSDefaultConfiguration -Region $awsRegion
+    }
 
     Write-Information "Set current AWS region to `"$awsRegion`""
 }

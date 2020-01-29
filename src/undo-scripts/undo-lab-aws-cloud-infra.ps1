@@ -14,7 +14,7 @@ Set-Location ([System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Path))
 . ../aws.ps1
 Pop-Location
 
-ConfigureCurrentAwsRegion
+ConfigureCurrentAwsRegion -profileName $null
 DeleteCfnStacks($workshopCfnStacks)
 
 Remove-ECRRepository -RepositoryName $ecrRepoName -IgnoreExistingImages $true -Force -ErrorAction SilentlyContinue

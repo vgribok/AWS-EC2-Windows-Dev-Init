@@ -68,11 +68,9 @@ if($IsWindows)
 Pop-Location
 
 # Re-setting EC2 instance to AWS defaults
-Write-Information "Starting standard AWS EC2 instance initialization"
 # This launches somewhat long-running AWS instance initialization scripts that gets stuck at 
 # DISKPART (scary! I know) for a little bit. Just let it finish, don't worry about it.
 InitializeEC2Instance 
-Write-Information "Finished standard AWS EC2 instance initialization"
 
 # Reset user password to counteract AWS initialization scrips
 SetLocalUserPassword -username $systemUserName -password $systemSecretWord -isDebug $isDebug
