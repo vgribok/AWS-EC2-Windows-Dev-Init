@@ -17,7 +17,7 @@ param(
     [string] $scriptDirectoryName = "AWS-EC2-Windows-Dev-Init",
     [string] $scriptBranchName = "master",
     [bool] $bootstrapDebug = $false,
-    [bool] $redirectToLog = $false
+    [string] $redirectToLog = $null
 )
     
 Write-Information "Debugging: $bootstrapDebug"
@@ -26,13 +26,13 @@ Push-Location
 Set-Location ([System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Path))
 
 if ($bootstrapDebug) 
-{   # Execution path for when debugging on dev box
+{   Write-Information "Execution path for when debugging on dev box"
     & ./workshop-prep.ps1 `
         -isDebug $bootstrapDebug -labName $labName `
         -sampleAppGitHubUrl $sampleAppGitHubUrl -sampleAppGitBranchName $sampleAppGitBranchName `
         -sampleAppSolutionFileName $sampleAppSolutionFileName -codeCommitRepoName $codeCommitRepoName
 }else
-{   # Execution path for actual production use
+{   Write-Information "Execution path for actual production use"
     Set-Location "~"
     git clone $scriptGitRepoUrl $scriptDirectoryName | Out-Host
     Write-Information "Cloned `"$scriptGitRepoUrl`" remote Git repository to `"~/$scriptDirectoryName`" directory"
@@ -44,12 +44,14 @@ if ($bootstrapDebug)
 
     if($redirectToLog)
     {
+		Write-Information "Output redirected to the log file"
         & ./src/workshop-prep.ps1 `
         -isDebug $bootstrapDebug -labName $labName `
         -sampleAppGitHubUrl $sampleAppGitHubUrl -sampleAppGitBranchName $sampleAppGitBranchName `
         -sampleAppSolutionFileName $sampleAppSolutionFileName -codeCommitRepoName $codeCommitRepoName `
         *> "aws-workshop-init-script.log"
     }else {
+		Write-Information "Output is NOT redirected to the log file"
         & ./src/workshop-prep.ps1 `
         -isDebug $bootstrapDebug -labName $labName `
         -sampleAppGitHubUrl $sampleAppGitHubUrl -sampleAppGitBranchName $sampleAppGitBranchName `

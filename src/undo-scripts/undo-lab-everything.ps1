@@ -12,7 +12,7 @@ param(
     [string] $workDirectory = "~/AWS-workshop-assets",
     [string] $vsLicenseScriptGitHubUrl = "https://github.com/vgribok/VSCELicense.git",
     [string] $tempIamUserPrefix = "temp-aws-lab-user",
-    [bool] $redirectTolLog = $false
+    [string] $redirectTolLog = $null
 )
 
 $scriptLocation = [System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Path)

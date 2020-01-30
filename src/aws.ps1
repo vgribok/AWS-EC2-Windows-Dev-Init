@@ -30,7 +30,7 @@ function InitWindowsEC2Instance
     try 
     {
         Write-Information "Running EC2 initialization script"
-        Invoke-Expression $initScriptPath
+        Invoke-Expression $initScriptPath | Out-Null
     }
     finally {
         Write-Information "Done running EC2 initialization script"
