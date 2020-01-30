@@ -15,4 +15,5 @@ foreach ($gitUrl in $gitUrls)
 {
     [string] $gitRepoDirectory = DirectoryNameFromGitHubUrl -gitHubUrl $gitUrl
     Remove-Item -Recurse -Force "$workDirectory/$gitRepoDirectory" -ErrorAction SilentlyContinue
+    Write-Information "Removed `"$workDirectory/$gitRepoDirectory`" directory"
 }

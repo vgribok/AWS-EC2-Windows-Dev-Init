@@ -8,7 +8,7 @@ param(
     # Top group of parameters will change from one lab to another
     [string] $labName = "dotnet-cdk",
     [string] $sampleAppGitHubUrl = "https://github.com/vgribok/modernization-unicorn-store.git",
-    [string] $sampleAppGitBranchName = "cdk-module",
+    [string] $sampleAppGitBranchName = "cdk-module-completed",
     [string] $sampleAppSolutionFileName = "UnicornStore.sln",
     [string] $codeCommitRepoName = "Unicorn-Store-Sample-Git-Repo",
 
@@ -16,7 +16,8 @@ param(
     [string] $scriptGitRepoUrl = "https://github.com/vgribok/AWS-EC2-Windows-Dev-Init.git",
     [string] $scriptDirectoryName = "AWS-EC2-Windows-Dev-Init",
     [string] $scriptBranchName = "master",
-    [System.Boolean] $bootstrapDebug = $false
+    [bool] $bootstrapDebug = $false,
+    [bool] $redirectToLog = $false
 )
     
 Write-Information "Debugging: $bootstrapDebug"
@@ -41,11 +42,19 @@ if ($bootstrapDebug)
     git pull
     Write-Information "Checked out and pulled `"$scriptBranchName`" branch"
 
-    & ./src/workshop-prep.ps1 `
+    if($redirectToLog)
+    {
+        & ./src/workshop-prep.ps1 `
         -isDebug $bootstrapDebug -labName $labName `
         -sampleAppGitHubUrl $sampleAppGitHubUrl -sampleAppGitBranchName $sampleAppGitBranchName `
         -sampleAppSolutionFileName $sampleAppSolutionFileName -codeCommitRepoName $codeCommitRepoName `
         *> "aws-workshop-init-script.log"
+    }else {
+        & ./src/workshop-prep.ps1 `
+        -isDebug $bootstrapDebug -labName $labName `
+        -sampleAppGitHubUrl $sampleAppGitHubUrl -sampleAppGitBranchName $sampleAppGitBranchName `
+        -sampleAppSolutionFileName $sampleAppSolutionFileName -codeCommitRepoName $codeCommitRepoName
+    }
 }
 
 Pop-Location

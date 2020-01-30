@@ -7,7 +7,7 @@ param(
     # Top group of parameters will change from one lab to another
     [string] $labName = "dotnet-cdk",
     [string] $sampleAppGitHubUrl = "https://github.com/vgribok/modernization-unicorn-store.git",
-    [string] $sampleAppGitBranchName = "cdk-module",
+    [string] $sampleAppGitBranchName = "cdk-module-completed",
     [string] $sampleAppSolutionFileName = "UnicornStore.sln",
     [string] $codeCommitRepoName = "Unicorn-Store-Sample-Git-Repo",
 
@@ -21,6 +21,9 @@ param(
     [string] $tempIamUserPrefix = "temp-aws-lab-user",
     [int] $codeCommitCredCreationDelaySeconds = 10 
 )
+
+$now = get-date
+"AWS lab initialization scripts started on $now"
 
 Import-Module awspowershell.netcore # Todo: add this to system's PowerShell profile
 
@@ -91,4 +94,5 @@ refreshenv
 $ignore = CreateCodeCommitGitCredentials -iamUserName $iamUserName -codeCommitCredCreationDelaySeconds $codeCommitCredCreationDelaySeconds
 ConfigureGitSettings -gitUsername $iamUserName -projectRootDirPath $sampleAppPath -helper "!aws codecommit credential-helper $@"
 
-"Workshop dev box initialization has finished"
+$now = get-date
+"Workshop dev box initialization has finished on $now"
