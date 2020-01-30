@@ -14,7 +14,7 @@ function setWindowsUserPassword {
         $username = $env:USERNAME
     }
     
-    Write-Debug "Setting password for Windows user `"$username`""
+    Write-Information "Setting password for Windows user `"$username`""
 
     [System.Boolean] $savedWhatIf = $WhatIfPreference
     try {

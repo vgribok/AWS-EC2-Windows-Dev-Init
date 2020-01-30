@@ -29,11 +29,11 @@ function InitWindowsEC2Instance
 
     try 
     {
-        Write-Debug "Running EC2 initialization script"
+        Write-Information "Running EC2 initialization script"
         Invoke-Expression $initScriptPath
     }
     finally {
-        Write-Debug "Done running EC2 initialization script"
+        Write-Information "Done running EC2 initialization script"
     }
 }
 
