@@ -12,8 +12,19 @@ param(
     [string] $workDirectory = "~/AWS-workshop-assets",
     [string] $vsLicenseScriptGitHubUrl = "https://github.com/vgribok/VSCELicense.git",
     [string] $tempIamUserPrefix = "temp-aws-lab-user",
-    [string] $redirectTolLog = $null
+    [string] $redirectToLog = $null,
+    [string] $confirmed = $null
 )
+
+if(-Not $confirmed)
+{
+    $input = Read-Host -Prompt "[Y/N] Are you sure you want to de-provision lab AWS resources? The lab cannot be restarted before this instance is re-initialized"
+    if($input.ToLowerInvariant() -ne "y")
+    {
+        "Cleanup cancelled."
+        return
+    }
+}
 
 $scriptLocation = [System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Path)
 
@@ -54,8 +65,12 @@ function Cleanup {
     Pop-Location
 }
 
-if($redirectTolLog)
+if($redirectToLog)
 {
+    [string] $logFileRelPath = Join-Path $scriptLocation "../../undo-script.log"
+    $logFileLocation = [IO.Path]::GetFullPath($logFileRelPath)
+
+    Write-Information "Output redirected to `"$logFileLocation`""
     Cleanup `
         -scriptLocation $scriptLocation `
         -labName $labName `
@@ -65,9 +80,10 @@ if($redirectTolLog)
         -workDirectory $workDirectory `
         -vsLicenseScriptGitHubUrl $vsLicenseScriptGitHubUrl `
         -tempIamUserPrefix $tempIamUserPrefix  `
-        *> "../undo-script.log"
+        *> $logFileLocation
 }else 
 {
+    Write-Information "Output is NOT redirected to a log file"
     Cleanup `
         -scriptLocation $scriptLocation `
         -labName $labName `

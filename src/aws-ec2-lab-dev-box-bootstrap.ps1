@@ -44,12 +44,14 @@ if ($bootstrapDebug)
 
     if($redirectToLog)
     {
-		Write-Information "Output redirected to the log file"
+		$logFilePath = pwd
+        $logFilePath = Join-Path $logFilePath "aws-workshop-init-script.log"
+		Write-Information "Initialization script output redirected to `"$logFilePath`""
         & ./src/workshop-prep.ps1 `
         -isDebug $bootstrapDebug -labName $labName `
         -sampleAppGitHubUrl $sampleAppGitHubUrl -sampleAppGitBranchName $sampleAppGitBranchName `
         -sampleAppSolutionFileName $sampleAppSolutionFileName -codeCommitRepoName $codeCommitRepoName `
-        *> "aws-workshop-init-script.log"
+        *> $logFilePath
     }else {
 		Write-Information "Output is NOT redirected to the log file"
         & ./src/workshop-prep.ps1 `
