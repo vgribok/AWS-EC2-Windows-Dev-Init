@@ -19,7 +19,8 @@ param(
     [string] $vsLicenseScriptGitHubUrl = "https://github.com/vgribok/VSCELicense.git",
     [string] $vsVersion = "VS2019",
     [string] $tempIamUserPrefix = "temp-aws-lab-user",
-    [int] $codeCommitCredCreationDelaySeconds = 10 
+    [int] $codeCommitCredCreationDelaySeconds = 10,
+    [string] $awsRegion = $null # surfaced here for debugging purposes. Leave empty to let the value assigned from EC2 metadata
 )
 
 $now = get-date
@@ -36,7 +37,15 @@ Set-Location ([System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Path))
 Pop-Location
 
 # Retrieve Region name, like us-east-1, from EC2 instance metadata
-[string] $awsRegion = GetDefaultAwsRegionName
+if(-Not $awsRegion)
+{
+    $awsRegion = GetDefaultAwsRegionName
+}
+for( ; -Not $awsRegion ; $awsRegion = GetDefaultAwsRegionName)
+{
+    # no metadata, need to wait to let EC2 initialization script to finish
+    Start-Sleep -s 5
+}
 Write-Information "Current AWS region metadata is determined to be `"$awsRegion`""
 
 Push-Location
@@ -49,6 +58,10 @@ Set-Location $workDirectory
 $retVal = GitCloneAndCheckout -remoteGitUrl $sampleAppGitHubUrl -gitBranchName $sampleAppGitBranchName
 [string] $sampleAppDirectoryName = CleanupRetVal($retVal) 
 [string] $sampleAppPath = "$workDirectory/$sampleAppDirectoryName"
+
+# Enable usage of CDK in the current region
+cdk bootstrap
+Write-Information "Enabled CDK for `"$awsRegion`""
 
 # Build sample app
 Set-Location $sampleAppPath
