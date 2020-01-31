@@ -36,6 +36,34 @@ Set-Location ([System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Path))
 . ./sys.ps1
 Pop-Location
 
+Push-Location
+
+mkdir $workDirectory -ErrorAction SilentlyContinue
+Write-Information "Created directory `"$workDirectory`""
+
+# Get sample app source from GitHub
+Set-Location $workDirectory
+$retVal = GitCloneAndCheckout -remoteGitUrl $sampleAppGitHubUrl -gitBranchName $sampleAppGitBranchName
+[string] $sampleAppDirectoryName = CleanupRetVal($retVal) 
+[string] $sampleAppPath = "$workDirectory/$sampleAppDirectoryName"
+
+# Update Visual Studio Community License
+if($IsWindows)
+{
+    Write-Information "Bringing down stuff from `"$vsLicenseScriptGitHubUrl`""
+    Set-Location $workDirectory
+    [string] $vsLicenseScriptDirectory = GitCloneAndCheckout -remoteGitUrl $vsLicenseScriptGitHubUrl
+    Import-Module "$workDirectory/$vsLicenseScriptDirectory"
+    Set-VSCELicenseExpirationDate -Version $vsVersion
+}
+
+# Re-setting EC2 instance to AWS defaults
+# This launches somewhat long-running AWS instance initialization scripts that gets stuck at 
+# DISKPART (scary! I know) for a little bit. Just let it finish, don't worry about it.
+InitializeEC2Instance 
+
+# ALL AWS-RELATED ACTIONS SHOULD BE DONE BELOW THIS LINE
+
 # Retrieve Region name, like us-east-1, from EC2 instance metadata
 if(-Not $awsRegion)
 {
@@ -47,17 +75,6 @@ for( ; -Not $awsRegion ; $awsRegion = GetDefaultAwsRegionName)
     Start-Sleep -s 5
 }
 Write-Information "Current AWS region metadata is determined to be `"$awsRegion`""
-
-Push-Location
-
-mkdir $workDirectory -ErrorAction SilentlyContinue
-Write-Information "Created directory `"$workDirectory`""
-
-# Get sample app source from GitHub
-Set-Location $workDirectory
-$retVal = GitCloneAndCheckout -remoteGitUrl $sampleAppGitHubUrl -gitBranchName $sampleAppGitBranchName
-[string] $sampleAppDirectoryName = CleanupRetVal($retVal) 
-[string] $sampleAppPath = "$workDirectory/$sampleAppDirectoryName"
 
 # Enable usage of CDK in the current region
 cdk bootstrap
@@ -71,22 +88,7 @@ Write-Information "Finished building `"$sampleAppSolutionFileName`""
 
 AddCodeCommitGitRemote -awsRegion $awsRegion -codeCommitRepoName $codeCommitRepoName
 
-# Update Visual Studio Community License
-if($IsWindows)
-{
-    Write-Information "Bringing down stuff from `"$vsLicenseScriptGitHubUrl`""
-    Set-Location $workDirectory
-    [string] $vsLicenseScriptDirectory = GitCloneAndCheckout -remoteGitUrl $vsLicenseScriptGitHubUrl
-    Import-Module "$workDirectory/$vsLicenseScriptDirectory"
-    Set-VSCELicenseExpirationDate -Version $vsVersion
-}
-
 Pop-Location
-
-# Re-setting EC2 instance to AWS defaults
-# This launches somewhat long-running AWS instance initialization scripts that gets stuck at 
-# DISKPART (scary! I know) for a little bit. Just let it finish, don't worry about it.
-InitializeEC2Instance 
 
 # Reset user password to counteract AWS initialization scrips
 SetLocalUserPassword -username $systemUserName -password $systemSecretWord -isDebug $isDebug
