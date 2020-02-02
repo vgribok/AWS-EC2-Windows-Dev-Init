@@ -5,6 +5,9 @@ to get a sample app from a different remote Git location.
 #> 
 
 param(
+    [string] $redirectToLog = $null,
+    [bool] $bootstrapDebug = $false,
+
     # Top group of parameters will change from one lab to another
     [string] $labName = "dotnet-cdk",
     [string] $sampleAppGitHubUrl = "https://github.com/vgribok/modernization-unicorn-store.git",
@@ -16,8 +19,7 @@ param(
     [string] $scriptGitRepoUrl = "https://github.com/vgribok/AWS-EC2-Windows-Dev-Init.git",
     [string] $scriptDirectoryName = "AWS-EC2-Windows-Dev-Init",
     [string] $scriptBranchName = "master",
-    [bool] $bootstrapDebug = $false,
-    [string] $redirectToLog = $null
+    [string] $scriptSourceDirectory = "./src"
 )
     
 Write-Information "Debugging: $bootstrapDebug"
@@ -25,14 +27,11 @@ Write-Information "Debugging: $bootstrapDebug"
 Push-Location
 Set-Location ([System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Path))
 
-if ($bootstrapDebug) 
-{   Write-Information "Execution path for when debugging on dev box"
-    & ./workshop-prep.ps1 `
-        -isDebug $bootstrapDebug -labName $labName `
-        -sampleAppGitHubUrl $sampleAppGitHubUrl -sampleAppGitBranchName $sampleAppGitBranchName `
-        -sampleAppSolutionFileName $sampleAppSolutionFileName -codeCommitRepoName $codeCommitRepoName
-}else
-{   Write-Information "Execution path for actual production use"
+if (-Not $bootstrapDebug) 
+{   
+    Write-Information "Getting init scripts from `"$scriptGitRepoUrl`", branch `"$scriptBranchName`""
+
+    # Get init scripts from GitHub
     Set-Location "~"
     git clone $scriptGitRepoUrl $scriptDirectoryName | Out-Host
     Write-Information "Cloned `"$scriptGitRepoUrl`" remote Git repository to `"~/$scriptDirectoryName`" directory"
@@ -41,24 +40,14 @@ if ($bootstrapDebug)
     git checkout $scriptBranchName
     git pull
     Write-Information "Checked out and pulled `"$scriptBranchName`" branch"
-
-    if($redirectToLog)
-    {
-		$logFilePath = pwd
-        $logFilePath = Join-Path $logFilePath "aws-workshop-init-script.log"
-		Write-Information "Initialization script output redirected to `"$logFilePath`""
-        & ./src/workshop-prep.ps1 `
-        -isDebug $bootstrapDebug -labName $labName `
-        -sampleAppGitHubUrl $sampleAppGitHubUrl -sampleAppGitBranchName $sampleAppGitBranchName `
-        -sampleAppSolutionFileName $sampleAppSolutionFileName -codeCommitRepoName $codeCommitRepoName `
-        *> $logFilePath
-    }else {
-		Write-Information "Output is NOT redirected to the log file"
-        & ./src/workshop-prep.ps1 `
-        -isDebug $bootstrapDebug -labName $labName `
-        -sampleAppGitHubUrl $sampleAppGitHubUrl -sampleAppGitBranchName $sampleAppGitBranchName `
-        -sampleAppSolutionFileName $sampleAppSolutionFileName -codeCommitRepoName $codeCommitRepoName
-    }
+    Set-Location $scriptSourceDirectory
 }
+
+Write-Information "Invoking main workshop initialization script"
+& ./workshop-prep.ps1 `
+    -redirectToLog $redirectToLog `
+    -isDebug $bootstrapDebug -labName $labName `
+    -sampleAppGitHubUrl $sampleAppGitHubUrl -sampleAppGitBranchName $sampleAppGitBranchName `
+    -sampleAppSolutionFileName $sampleAppSolutionFileName -codeCommitRepoName $codeCommitRepoName
 
 Pop-Location

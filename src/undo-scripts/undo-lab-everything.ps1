@@ -1,4 +1,8 @@
 param(
+    [string] $redirectToLog = $null,
+    [string] $cleanupConfirmed = $null,
+    [string] $logFileName = "undo-script.log",
+
     # Top group of parameters will change from one lab to another
     [string] $labName = "dotnet-cdk",
     [string] $sampleAppGitHubUrl = "https://github.com/vgribok/modernization-unicorn-store.git",
@@ -11,12 +15,10 @@ param(
     # This group of parameters are likely to stay unchanged from one lab to another
     [string] $workDirectory = "~/AWS-workshop-assets",
     [string] $vsLicenseScriptGitHubUrl = "https://github.com/vgribok/VSCELicense.git",
-    [string] $tempIamUserPrefix = "temp-aws-lab-user",
-    [string] $redirectToLog = $null,
-    [string] $confirmed = $null
+    [string] $tempIamUserPrefix = "temp-aws-lab-user"
 )
 
-if(-Not $confirmed)
+if(-Not $cleanupConfirmed)
 {
     $input = Read-Host -Prompt "[Y/N] Are you sure you want to de-provision lab AWS resources? The lab cannot be restarted before this instance is re-initialized"
     if($input.ToLowerInvariant() -ne "y")
@@ -67,10 +69,18 @@ function Cleanup {
 
 if($redirectToLog)
 {
-    [string] $logFileRelPath = Join-Path $scriptLocation "../../undo-script.log"
-    $logFileLocation = [IO.Path]::GetFullPath($logFileRelPath)
+    if($IsWindows)
+    {
+        $logFileDirPath = $env:SystemDrive + "\"
+    }else 
+    {
+        $logFileDirPath = "/var/log/aws-workshop-init-scripts"
+        mkdir $logFileDirPath -ErrorAction SilentlyContinue
+    }
 
+    $logFileLocation = Join-Path $logFileDirPath $logFileName
     Write-Information "Output redirected to `"$logFileLocation`""
+
     Cleanup `
         -scriptLocation $scriptLocation `
         -labName $labName `
@@ -80,7 +90,7 @@ if($redirectToLog)
         -workDirectory $workDirectory `
         -vsLicenseScriptGitHubUrl $vsLicenseScriptGitHubUrl `
         -tempIamUserPrefix $tempIamUserPrefix  `
-        *> $logFileLocation
+        *> $logFileLocation # redirecting all output to a log file
 }else 
 {
     Write-Information "Output is NOT redirected to a log file"
