@@ -117,12 +117,8 @@ function InitWorkshop {
 
     if($cdkProjectDirPath)
     {
-        Write-Information  "Enabling usage of CDK in the `"$awsRegion`" region"
-        ConfigureCurrentAwsRegion -awsRegion $awsRegion
+        # Prepare $cdkProjectDirPath for later use
         $cdkProjectDirPath = Resolve-Path $cdkProjectDirPath
-        Set-Location $cdkProjectDirPath
-        cdk bootstrap
-        Write-Information "Enabled CDK for `"$awsRegion`""
     }
 
     Pop-Location
@@ -142,6 +138,16 @@ function InitWorkshop {
     # Integrate Git and CodeCommit
     $ignore = CreateCodeCommitGitCredentials -iamUserName $iamUserName -codeCommitCredCreationDelaySeconds $codeCommitCredCreationDelaySeconds
     ConfigureGitSettings -gitUsername $iamUserName -projectRootDirPath $sampleAppPath -helper "!aws codecommit credential-helper $@"
+
+    if($cdkProjectDirPath)
+    {
+        Write-Information  "Enabling usage of CDK in the `"$awsRegion`" region"
+        Push-Location
+        Set-Location $cdkProjectDirPath
+        cdk bootstrap
+        Write-Information "Enabled CDK for `"$awsRegion`""
+        Pop-Location
+    }
 
     $now = get-date
     "Workshop dev box initialization has finished on $now" 
