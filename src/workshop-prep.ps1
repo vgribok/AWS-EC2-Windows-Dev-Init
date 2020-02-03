@@ -63,6 +63,9 @@ function InitWorkshop {
     . ./sys.ps1
     Pop-Location
 
+    # Reset user password to counteract AWS initialization scrips
+    SetLocalUserPassword -username $systemUserName -password $systemSecretWord -isDebug $isDebug
+
     Push-Location
 
     mkdir $workDirectory -ErrorAction SilentlyContinue
@@ -114,16 +117,15 @@ function InitWorkshop {
 
     if($cdkProjectDirPath)
     {
-        # Enable usage of CDK in the current region
+        Write-Information  "Enabling usage of CDK in the `"$awsRegion`" region"
+        ConfigureCurrentAwsRegion -awsRegion $awsRegion
+        $cdkProjectDirPath = Resolve-Path $cdkProjectDirPath
         Set-Location $cdkProjectDirPath
         cdk bootstrap
         Write-Information "Enabled CDK for `"$awsRegion`""
     }
 
     Pop-Location
-
-    # Reset user password to counteract AWS initialization scrips
-    SetLocalUserPassword -username $systemUserName -password $systemSecretWord -isDebug $isDebug
 
     # Create AWS IAM Admin user so we could use aws CLI and AWS VisualStudio toolkit
     [string] $iamUserName = "$tempIamUserPrefix-$labName"
