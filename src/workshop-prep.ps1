@@ -124,7 +124,7 @@ function InitWorkshop {
     Pop-Location
 
     # Create AWS IAM Admin user so we could use aws CLI and AWS VisualStudio toolkit
-    [string] $iamUserName = "$tempIamUserPrefix-$labName"
+    [string] $iamUserName = "$tempIamUserPrefix-$labName-$awsRegion" # Should not exceed 64 chars
     CreateAwsUser -iamUserName $iamUserName -isAdmin $true
 
     # Create access key so that user could be logged to enable AWS, CLI, PowerShell and AWS Tookit
