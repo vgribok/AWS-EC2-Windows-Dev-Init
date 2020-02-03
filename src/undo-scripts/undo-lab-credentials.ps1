@@ -13,7 +13,8 @@ Pop-Location
 
 ConfigureCurrentAwsRegion -profileName $null
 
-[string] $iamUserName = "$tempIamUserPrefix-$labName"
+$awsRegion = GetDefaultAwsRegionName
+[string] $iamUserName = "$tempIamUserPrefix-$labName-$awsRegion" # Should not exceed 64 chars
 
 RemoveCodeCommitCredentialsForIamUser($iamUserName)
 RemoveAccessKeyCredentialsFromTheSystem
