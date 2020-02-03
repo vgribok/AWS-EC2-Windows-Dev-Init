@@ -112,10 +112,13 @@ function InitWorkshop {
     # Adding "aws" as a Git remote, pointing to the CodeCommit repo in the current AWS account
     AddCodeCommitGitRemote -awsRegion $awsRegion -codeCommitRepoName $codeCommitRepoName
 
-    # Enable usage of CDK in the current region
-    Set-Location $cdkProjectDirPath
-    cdk bootstrap
-    Write-Information "Enabled CDK for `"$awsRegion`""
+    if($cdkProjectDirPath)
+    {
+        # Enable usage of CDK in the current region
+        Set-Location $cdkProjectDirPath
+        cdk bootstrap
+        Write-Information "Enabled CDK for `"$awsRegion`""
+    }
 
     Pop-Location
 

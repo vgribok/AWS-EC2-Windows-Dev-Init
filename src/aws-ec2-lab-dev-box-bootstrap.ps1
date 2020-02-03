@@ -13,6 +13,7 @@ param(
     [string] $sampleAppGitHubUrl = "https://github.com/vgribok/modernization-unicorn-store.git",
     [string] $sampleAppGitBranchName = "cdk-module-completed",
     [string] $sampleAppSolutionFileName = "UnicornStore.sln",
+    [string] $cdkProjectDirPath = "./infra-as-code/CicdInfraAsCode/src", # put $null here to skip "cdk bootstrap" in the main script
     [string] $codeCommitRepoName = "Unicorn-Store-Sample-Git-Repo",
 
     # This group of parameters will likely stay unchanged
@@ -48,6 +49,7 @@ Write-Information "Invoking main workshop initialization script"
     -redirectToLog $redirectToLog `
     -isDebug $bootstrapDebug -labName $labName `
     -sampleAppGitHubUrl $sampleAppGitHubUrl -sampleAppGitBranchName $sampleAppGitBranchName `
-    -sampleAppSolutionFileName $sampleAppSolutionFileName -codeCommitRepoName $codeCommitRepoName
+    -sampleAppSolutionFileName $sampleAppSolutionFileName -cdkProjectDirPath $cdkProjectDirPath `
+    -codeCommitRepoName $codeCommitRepoName
 
 Pop-Location
