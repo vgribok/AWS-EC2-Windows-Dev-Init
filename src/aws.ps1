@@ -45,18 +45,42 @@ function InitializeEC2Instance
     }
 }
 
+function GetInstanceName()
+{
+    [string] $instanceId = Get-EC2InstanceMetadata -category InstanceId
+    if(!$instanceId)
+    {
+        $instanceId = $env:HOSTNAME
+    }
+    if(!$instanceId)
+    {
+        $instanceId = $env:COMPUTERNAME
+    }
+    return $instanceId
+}
+
+function MakeLabUserName {
+    param (
+        [Parameter(mandatory=$true)] [string] $tempIamUserPrefix,
+        [Parameter(mandatory=$true)] [string] $labName,
+        [Parameter(mandatory=$true)] [string] $awsRegion
+    )
+    [string] $iamUserName = "$tempIamUserPrefix-$labName-$awsRegion" # Should not exceed 64 chars
+    [string] $instanceId = GetInstanceName # using EC2 instance ID as a username suffix
+    $iamUserName += "-$instanceId"
+
+     # Should not exceed 64 chars
+    return $iamUserName
+}
+
 function CreateAwsUser {
     param (
         [Parameter(mandatory=$true)] [string] $iamUserName,
-        [bool] $useInstanceIdSuffix = $false,
         [bool] $isAdmin = $false
     )
 
-    if($useInstanceIdSuffix)
-    {
-        [string] $instanceId = Get-EC2InstanceMetadata -category InstanceId # using EC2 instance ID as a username suffix
-        $iamUserName += "-$instanceId"
-    }
+    [string] $instanceId = GetInstanceName # using EC2 instance ID as a username suffix
+    $iamUserName += "-$instanceId"
 
     New-IAMUser -UserName $iamUserName -ErrorAction SilentlyContinue
     Write-Information "Created AWS IAM user `"$iamUserName`""

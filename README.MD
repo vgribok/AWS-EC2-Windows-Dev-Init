@@ -38,6 +38,20 @@ The cleanup script will destroy AWS infrastructure created by specified CloudFor
 
 ## How To Improve These Scripts
 
+### Prerequisites
+
 * Use [VsCode with PowerShell Extension](https://docs.microsoft.com/en-us/powershell/scripting/components/vscode/using-vscode?view=powershell-6)
 * [Ensure your VsCode PowerShell session runs in PowerShell 6 (Core)](https://docs.microsoft.com/en-us/powershell/scripting/components/vscode/using-vscode?view=powershell-6#choosing-a-version-of-powershell-to-use-with-the-extension) by checking `$PSVersionTable.PSVersion.Major` value, which should be "6".
-* Send a PR.
+
+### How to Develop/Debug These Scripts
+
+It makes most sense to debug these scripts on an EC2 instance. Use VsCode IDE with the PowerShell plugin installed.
+
+General flow is this:
+* Open root directory of this project in VsCode
+* To initialize everything, run/debug [/src/workshop-prep.ps1](./src/workshop-prep.ps1).
+* To cleanup everything, run/debug [/src/undo-scripts/undo-lab-everything.ps1](./src/undo-scripts/undo-lab-everything.ps1)
+
+When done, please send your pull request.
+
+Thank you!
