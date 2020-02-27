@@ -32,7 +32,7 @@ Use Windows Task Scheduler to run "`C:\Windows\System32\net.exe user Administrat
 
 ### EC2 Cleanup
 
-Run [undo-lab-everything.ps1](./src/undo-scripts/undo-lab-everything.ps1) after the lab. Create a shortcut to the script on the C:\ or in some other well-known and easy to get to location, but not on the desktop so that workshop attendees would not accidentally destroy AWS resources and their dev environment in the middle of the workshop.
+*Close ALL programs/windows* to ensure files and directories can be deleted, and then run [undo-lab-everything.ps1](./src/undo-scripts/undo-lab-everything.ps1) after the lab. Create a shortcut to the script on the C:\ or in some other well-known and easy to get to location, but not on the desktop so that workshop attendees would not accidentally destroy AWS resources and their dev environment in the middle of the workshop.
 
 The cleanup script will destroy AWS infrastructure created by specified CloudFormation templates, destroy an ECR repo, delete lab user, un-configure AWS credentials on the EC2, and in general will take the system to the state where no AWS CLI, PowreShell or SDK functions can run.
 
@@ -50,7 +50,7 @@ It makes most sense to debug these scripts on an EC2 instance. Use VsCode IDE wi
 General flow is this:
 * Open root directory of this project in VsCode
 * To initialize everything, run/debug [/src/workshop-prep.ps1](./src/workshop-prep.ps1).
-* To cleanup everything, run/debug [/src/undo-scripts/undo-lab-everything.ps1](./src/undo-scripts/undo-lab-everything.ps1)
+* To cleanup everything, *close ALL programs/windows* and then run/debug [/src/undo-scripts/undo-lab-everything.ps1](./src/undo-scripts/undo-lab-everything.ps1)
 
 When done, please send your pull request.
 
