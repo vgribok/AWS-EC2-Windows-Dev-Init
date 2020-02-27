@@ -62,12 +62,10 @@ function GetInstanceName()
 function MakeLabUserName {
     param (
         [Parameter(mandatory=$true)] [string] $tempIamUserPrefix,
-        [Parameter(mandatory=$true)] [string] $labName,
         [Parameter(mandatory=$true)] [string] $awsRegion
     )
-    [string] $iamUserName = "$tempIamUserPrefix-$labName-$awsRegion" # Should not exceed 64 chars
     [string] $instanceId = GetInstanceName # using EC2 instance ID as a username suffix
-    $iamUserName += "-$instanceId"
+    [string] $iamUserName = "$tempIamUserPrefix-$awsRegion-$instanceId" # Should not exceed 64 chars
 
      # Should not exceed 64 chars
     return $iamUserName
@@ -78,9 +76,6 @@ function CreateAwsUser {
         [Parameter(mandatory=$true)] [string] $iamUserName,
         [bool] $isAdmin = $false
     )
-
-    [string] $instanceId = GetInstanceName # using EC2 instance ID as a username suffix
-    $iamUserName += "-$instanceId"
 
     New-IAMUser -UserName $iamUserName -ErrorAction SilentlyContinue
     Write-Information "Created AWS IAM user `"$iamUserName`""

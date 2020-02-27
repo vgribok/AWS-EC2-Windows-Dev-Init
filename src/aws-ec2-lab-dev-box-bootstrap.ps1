@@ -9,7 +9,6 @@ param(
     [bool] $bootstrapDebug = $false,
 
     # Top group of parameters will change from one lab to another
-    [string] $labName = "dotnet-cdk",
     [string] $sampleAppGitHubUrl = "https://github.com/vgribok/modernization-unicorn-store.git",
     [string] $sampleAppGitBranchName = "cdk-module-completed",
     [string] $sampleAppSolutionFileName = "UnicornStore.sln",
@@ -47,7 +46,7 @@ if (-Not $bootstrapDebug)
 Write-Information "Invoking main workshop initialization script"
 & ./workshop-prep.ps1 `
     -redirectToLog $redirectToLog `
-    -isDebug $bootstrapDebug -labName $labName `
+    -isDebug $bootstrapDebug `
     -sampleAppGitHubUrl $sampleAppGitHubUrl -sampleAppGitBranchName $sampleAppGitBranchName `
     -sampleAppSolutionFileName $sampleAppSolutionFileName -cdkProjectDirPath $cdkProjectDirPath `
     -codeCommitRepoName $codeCommitRepoName

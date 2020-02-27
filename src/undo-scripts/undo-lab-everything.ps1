@@ -4,7 +4,6 @@ param(
     [string] $logFileName = "undo-script.log",
 
     # Top group of parameters will change from one lab to another
-    [string] $labName = "dotnet-cdk",
     [string] $sampleAppGitHubUrl = "https://github.com/vgribok/modernization-unicorn-store.git",
     [string] $ecrRepoName = "unicorn-store-app",
     [string[]] $workshopCfnStacks = @(
@@ -33,7 +32,6 @@ $scriptLocation = [System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Pat
 function Cleanup {
     param(
      [string] $scriptLocation,
-     [string] $labName,
      [string] $sampleAppGitHubUrl,
      [string] $ecrRepoName,
      [string[]] $workshopCfnStacks,
@@ -54,7 +52,7 @@ function Cleanup {
     . ./undo-lab-sample-app-project.ps1 -workDirectory $workDirectory -gitUrls $gitUrls
     
     Set-Location $scriptLocation
-    . ./undo-lab-credentials.ps1 -labName $labName -tempIamUserPrefix $tempIamUserPrefix
+    . ./undo-lab-credentials.ps1 -tempIamUserPrefix $tempIamUserPrefix
     
     Set-Location $scriptLocation
     . ./undo-lab-aws-cloud-infra.ps1 -ecrRepoName $ecrRepoName -workshopCfnStack $workshopCfnStacks
@@ -83,7 +81,6 @@ if($redirectToLog)
 
     Cleanup `
         -scriptLocation $scriptLocation `
-        -labName $labName `
         -sampleAppGitHubUrl $sampleAppGitHubUrl `
         -ecrRepoName $ecrRepoName `
         -workshopCfnStacks $workshopCfnStacks `
@@ -96,7 +93,6 @@ if($redirectToLog)
     Write-Information "Output is NOT redirected to a log file"
     Cleanup `
         -scriptLocation $scriptLocation `
-        -labName $labName `
         -sampleAppGitHubUrl $sampleAppGitHubUrl `
         -ecrRepoName $ecrRepoName `
         -workshopCfnStacks $workshopCfnStacks `

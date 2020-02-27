@@ -8,7 +8,6 @@ param(
     [string] $logFileName = "aws-workshop-init-script.log",
 
     # Top group of parameters will change from one lab to another
-    [string] $labName = "dotnet-cdk",
     [string] $sampleAppGitHubUrl = "https://github.com/vgribok/modernization-unicorn-store.git",
     [string] $sampleAppGitBranchName = "cdk-module-completed",
     [string] $sampleAppSolutionFileName = "UnicornStore.sln",
@@ -32,7 +31,6 @@ $scriptLocation = [System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Pat
 function InitWorkshop {
     param (
         [string] $scriptLocation,
-        [string] $labName,
         [string] $sampleAppGitHubUrl,
         [string] $sampleAppGitBranchName,
         [string] $sampleAppSolutionFileName,
@@ -124,7 +122,7 @@ function InitWorkshop {
     Pop-Location
 
     # Create AWS IAM Admin user so we could use aws CLI and AWS VisualStudio toolkit
-    [string] $iamUserName = MakeLabUserName -tempIamUserPrefix $tempIamUserPrefix -labName $labName -awsRegion $awsRegion
+    [string] $iamUserName = MakeLabUserName -tempIamUserPrefix $tempIamUserPrefix -awsRegion $awsRegion
     CreateAwsUser -iamUserName $iamUserName -isAdmin $true
 
     # Create access key so that user could be logged to enable AWS, CLI, PowerShell and AWS Tookit
@@ -169,7 +167,6 @@ if($redirectToLog)
 
     InitWorkshop `
         -scriptLocation $scriptLocation `
-        -labName $labName `
         -sampleAppGitHubUrl $sampleAppGitHubUrl `
         -sampleAppGitBranchName $sampleAppGitBranchName `
         -sampleAppSolutionFileName $sampleAppSolutionFileName `
@@ -191,7 +188,6 @@ if($redirectToLog)
     
     InitWorkshop `
         -scriptLocation $scriptLocation `
-        -labName $labName `
         -sampleAppGitHubUrl $sampleAppGitHubUrl `
         -sampleAppGitBranchName $sampleAppGitBranchName `
         -sampleAppSolutionFileName $sampleAppSolutionFileName `

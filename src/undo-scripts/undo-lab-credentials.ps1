@@ -1,5 +1,4 @@
 param(
-    [string] $labName = "dotnet-cdk",
     [string] $tempIamUserPrefix = "temp-aws-lab-user"
 )
 
@@ -15,7 +14,7 @@ ConfigureCurrentAwsRegion -profileName $null
 
 $awsRegion = GetDefaultAwsRegionName
 
-[string] $iamUserName = MakeLabUserName -tempIamUserPrefix $tempIamUserPrefix -labName $labName -awsRegion $awsRegion
+[string] $iamUserName = MakeLabUserName -tempIamUserPrefix $tempIamUserPrefix -awsRegion $awsRegion
 
 RemoveCodeCommitCredentialsForIamUser($iamUserName)
 RemoveAccessKeyCredentialsFromTheSystem
