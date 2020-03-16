@@ -18,7 +18,7 @@ param(
     # This group of parameters will likely stay unchanged
     [string] $scriptGitRepoUrl = "https://github.com/vgribok/AWS-EC2-Windows-Dev-Init.git",
     [string] $scriptDirectoryName = "AWS-EC2-Windows-Dev-Init",
-    [string] $scriptBranchName = "master",
+    [string] $scriptBranchName = $null,
     [string] $scriptSourceDirectory = "./src"
 )
     
@@ -29,6 +29,16 @@ Set-Location ([System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Path))
 
 if (-Not $bootstrapDebug) 
 {   
+    if(-Not $scriptBranchName)
+    {
+        $scriptBranchName = $env:UNICORN_LAB_INIT_SCRIPT_BRANCH
+
+        if(-Not $scriptBranchName)
+        {
+            $scriptBranchName = "master"
+        }
+    }
+
     Write-Information "Getting init scripts from `"$scriptGitRepoUrl`", branch `"$scriptBranchName`""
 
     # Get init scripts from GitHub
