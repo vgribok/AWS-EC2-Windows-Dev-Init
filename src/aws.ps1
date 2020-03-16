@@ -240,3 +240,119 @@ function CreateCodeCommitGitCredentials {
 
     return $codeCommitCreds
 }
+
+param(
+    [string] $linuxAmiId = "ami-089369d591ae701ba",
+    [Amazon.EC2.InstanceType] $instanceType = "t3a.medium"
+)
+
+function MakeLinuxInstanceName {
+    [string] $windowsInstanceId = Get-EC2InstanceMetadata -category InstanceId
+    return "Docker daemon for $windowsInstanceId"
+}
+
+function CreateEc2Tag {
+    param (
+        [Parameter(mandatory=$true)] [string] $tagName,
+        [Parameter(mandatory=$true)] [string] $tagValue,
+        [Amazon.EC2.Model.TagSpecification] $tagSpec = $null
+    )
+    
+    if(-Not $tagSpec)
+    {
+        $tagSpec = New-Object Amazon.EC2.Model.TagSpecification
+    }
+    $tagSpec.ResourceType = [Amazon.EC2.ResourceType]::Instance
+
+    $tag = New-Object Amazon.EC2.Model.Tag
+    $tag.Key = $tagName
+    $tag.Value = $tagValue
+
+    $tagSpec.Tags.Add($tag)
+
+    return $tagSpec
+}
+
+<#
+Starts sattelite Linux EC2 instance in the same vpc/subnet/securitygroup
+#>
+function StartLinuxDockerDaemonInstance {
+    param (
+        [Parameter(mandatory=$true)] [string] $linuxAmiId,
+        [Parameter(mandatory=$true)] [Amazon.EC2.InstanceType] $instanceType
+    )
+
+    [string] $ec2Mac = Get-EC2InstanceMetadata -Path "/mac"
+    [string] $subnetId = Get-EC2InstanceMetadata -Path "/network/interfaces/macs/$($ec2Mac)/subnet-id"
+    [string] $securityGroupIds = Get-EC2InstanceMetadata -Path "/network/interfaces/macs/$($ec2Mac)/security-group-ids"
+
+    $tagSpec = CreateEc2Tag -tagName "Name" -tagValue (MakeLinuxInstanceName)
+
+    $linuxInstance = New-EC2Instance `
+        -ImageId $linuxAmiId `
+        -SubnetId $subnetId `
+        -InstanceType $instanceType `
+        -SecurityGroupId $securityGroupIds `
+        -TagSpecifications $tagSpec
+
+    return $linuxInstance
+}
+
+<#
+Points Docker client to an EC2 instance by setting DOCKER_HOST environment variable.
+If instance is $null, removes DOCKER_HOST environment variable.
+#>
+function SetDockerHostUserEnvVar {
+    param (
+        $instance
+    )
+
+    if($instance)
+    {
+        [string] $dockerHostEnvVarValue = "tcp://$($instance.PrivateIpAddress):2375" #DOCKER_HOST="tcp://172.31.9.24:2375"
+    }else {
+        [string] $dockerHostEnvVarValue = $null
+    }
+
+    [System.Environment]::SetEnvironmentVariable("DOCKER_HOST", $dockerHostEnvVarValue, [System.EnvironmentVariableTarget]::User)
+    [System.Environment]::SetEnvironmentVariable("DOCKER_HOST", $dockerHostEnvVarValue, [System.EnvironmentVariableTarget]::Process)
+}
+
+function GetInstanceByName {
+    param (
+        [Parameter(mandatory=$true)] [string] $ec2InstanceName
+    )
+
+    $searchFor =@(
+    @{
+        name = 'tag:Name'
+        values = $ec2InstanceName
+    })
+    $instance = Get-EC2Instance -Filter $searchFor
+    return $instance.Instances
+}
+
+function TerminateInstanceByName {
+    param (
+        [Parameter(mandatory=$true)] [string] $ec2InstanceName
+    )
+
+    $instance = GetInstanceByname -ec2InstanceName $ec2InstanceName
+    if($instance)
+    {
+        return Remove-EC2Instance -InstanceId $instance.InstanceId -Force
+    }
+}
+
+<#
+$hkw = TerminateInstanceByName(MakeLinuxInstanceName)
+SetDockerHostUserEnvVar
+#>
+
+<#
+# Starts Linux EC2 hosting Docker daemon
+$linuxInstance = StartLinuxDockerDaemonInstance -linuxAmiId $linuxAmiId -instanceType $instanceType
+
+# Points to remote Linux Docker host
+SetDockerHostUserEnvVar -instance $linuxInstance.Instances[0]
+#>
