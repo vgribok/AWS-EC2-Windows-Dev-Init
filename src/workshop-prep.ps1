@@ -39,7 +39,10 @@ function InitWorkshop {
         [string] $sampleAppSolutionFileName,
         [string] $cdkProjectDirPath,
         [string] $codeCommitRepoName,
-    
+        [string] $useDockerDamonLinuxEc2,
+        [string] $dockerDaemonLinuxAmi,
+        [string] $dockerDaemonLinuxInstanceSize,
+        
         [string] $workDirectory,
         [bool] $isDebug,
         [string] $systemUserName,
@@ -197,6 +200,10 @@ if($redirectToLog)
         -sampleAppSolutionFileName $sampleAppSolutionFileName `
         -cdkProjectDirPath $cdkProjectDirPath `
         -codeCommitRepoName $codeCommitRepoName `
+        -useDockerDamonLinuxEc2 $useDockerDamonLinuxEc2 `
+        -dockerDaemonLinuxAmi $dockerDaemonLinuxAmi `
+        -dockerDaemonLinuxInstanceSize $dockerDaemonLinuxInstanceSize `
+
         -workDirectory $workDirectory `
         -isDebug $isDebug `
         -systemUserName $systemUserName `
@@ -218,6 +225,10 @@ if($redirectToLog)
         -sampleAppSolutionFileName $sampleAppSolutionFileName `
         -cdkProjectDirPath $cdkProjectDirPath `
         -codeCommitRepoName $codeCommitRepoName `
+        -useDockerDamonLinuxEc2 $useDockerDamonLinuxEc2 `
+        -dockerDaemonLinuxAmi $dockerDaemonLinuxAmi `
+        -dockerDaemonLinuxInstanceSize $dockerDaemonLinuxInstanceSize `
+        
         -workDirectory $workDirectory `
         -isDebug $isDebug `
         -systemUserName $systemUserName `
