@@ -61,7 +61,7 @@ function InitWorkshop {
     . ./sys.ps1
     Pop-Location
 
-    [string[]] $knownEnvVars = @("BOGUS_HKW", "UNICORN_LAB_INIT_SCRIPT_BRANCH", "LINUX_DOCKER_AMI", "LINUX_DOCKER_START", "LINUX_DOCKER_INSTANCE_SIZE")
+    [string[]] $knownEnvVars = @("BOGUS_HKW", "UNICORN_LAB_INIT_SCRIPT_BRANCH", "UNICORN_LAB_LINUX_DOCKER_AMI", "UNICORN_LAB_LINUX_DOCKER_START", "UNICORN_LAB_LINUX_DOCKER_INSTANCE_SIZE")
     foreach ($envVarName in $knownEnvVars)
     {
         Write-Information "Env Var: $envVarName=$([System.Environment]::GetEnvironmentVariable($envVarName))"

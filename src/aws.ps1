@@ -241,11 +241,6 @@ function CreateCodeCommitGitCredentials {
     return $codeCommitCreds
 }
 
-param(
-    [string] $linuxAmiId = "ami-089369d591ae701ba",
-    [Amazon.EC2.InstanceType] $instanceType = "t3a.medium"
-)
-
 function MakeLinuxInstanceName {
     [string] $windowsInstanceId = Get-EC2InstanceMetadata -category InstanceId
     return "Docker daemon for $windowsInstanceId"
