@@ -94,7 +94,7 @@ function InitWorkshop {
     # Re-setting EC2 instance to AWS defaults
     # This launches somewhat long-running AWS instance initialization scripts that gets stuck at 
     # DISKPART (scary! I know) for a little bit. Just let it finish, don't worry about it.
-    InitializeEC2Instance 
+    # InitializeEC2Instance 
 
     # ALL AWS-RELATED ACTIONS SHOULD BE DONE BELOW THIS LINE
     foreach ($envVarName in $knownEnvVars)
