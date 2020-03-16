@@ -335,6 +335,7 @@ function TerminateInstanceByName {
     $instance = GetInstanceByname -ec2InstanceName $ec2InstanceName
     if($instance)
     {
+        Write-Information "Terminating instace `"$ec2InstanceName`" ($($instance.InstanceId))"
         return Remove-EC2Instance -InstanceId $instance.InstanceId -Force
     }
 }

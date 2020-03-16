@@ -13,6 +13,9 @@ param(
     [string] $sampleAppSolutionFileName = "UnicornStore.sln",
     [string] $cdkProjectDirPath = "./infra-as-code/CicdInfraAsCode/src", # Need just one CDK project path (in case there are more), from which to run "cdk bootstrap"
     [string] $codeCommitRepoName = "Unicorn-Store-Sample-Git-Repo",
+    [string] $useDockerDamonLinuxEc2 = $null, # env var UNICORN_LAB_LINUX_DOCKER_START
+    [string] $dockerDaemonLinuxAmi = $null, # env var UNICORN_LAB_LINUX_DOCKER_AMI
+    [string] $dockerDaemonLinuxInstanceSize = $null, # env var UNICORN_LAB_LINUX_DOCKER_INSTANCE_SIZE
 
     # This group of parameters are likely to stay unchanged from one lab to another
     [string] $workDirectory = "~/AWS-workshop-assets",
@@ -71,6 +74,18 @@ function InitWorkshop {
     SetLocalUserPassword -username $systemUserName -password $systemSecretWord -isDebug $isDebug
 
     Push-Location
+
+    if($useDockerDamonLinuxEc2 -or $env:UNICORN_LAB_LINUX_DOCKER_START)
+    {   # Start Docker remote daemon on the satellite Linux EC2 instance
+        $dockerDaemonLinuxAmi ??= $env:UNICORN_LAB_LINUX_DOCKER_AMI
+        $dockerDaemonLinuxInstanceSize ??= $env:UNICORN_LAB_LINUX_DOCKER_INSTANCE_SIZE ?? "t3a.medium"
+    
+        if($dockerDaemonLinuxAmi)
+        {
+            $linuxInstance = StartLinuxDockerDaemonInstance -linuxAmiId $dockerDaemonLinuxAmi -instanceType $dockerDaemonLinuxInstanceSize
+            SetDockerHostUserEnvVar -instance $linuxInstance.Instances[0] # Sets "DOCKER_HOST" env var
+        }
+    }
 
     mkdir $workDirectory -ErrorAction SilentlyContinue
     Write-Information "Created directory `"$workDirectory`""
