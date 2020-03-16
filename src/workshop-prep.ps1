@@ -97,6 +97,10 @@ function InitWorkshop {
     InitializeEC2Instance 
 
     # ALL AWS-RELATED ACTIONS SHOULD BE DONE BELOW THIS LINE
+    foreach ($envVarName in $knownEnvVars)
+    {
+        Write-Information "Env Var: $envVarName=$([System.Environment]::GetEnvironmentVariable($envVarName))"
+    }
 
     # Retrieve Region name, like us-east-1, from EC2 instance metadata
     if(-Not $awsRegion)
