@@ -78,15 +78,18 @@ function InitWorkshop {
 
     Push-Location
 
-    if($useDockerDamonLinuxEc2 -or $env:UNICORN_LAB_LINUX_DOCKER_START)
-    {   # Start Docker remote daemon on the satellite Linux EC2 instance
-        $dockerDaemonLinuxAmi ??= $env:UNICORN_LAB_LINUX_DOCKER_AMI
-        $dockerDaemonLinuxInstanceSize ??= $env:UNICORN_LAB_LINUX_DOCKER_INSTANCE_SIZE ?? "t3a.medium"
-    
-        if($dockerDaemonLinuxAmi)
-        {
-            $linuxInstance = StartLinuxDockerDaemonInstance -linuxAmiId $dockerDaemonLinuxAmi -instanceType $dockerDaemonLinuxInstanceSize
-            SetDockerHostUserEnvVar -instance $linuxInstance.Instances[0] # Sets "DOCKER_HOST" env var
+    if($IsWindows)
+    {
+        if($useDockerDamonLinuxEc2 -or $env:UNICORN_LAB_LINUX_DOCKER_START)
+        {   # Start Docker remote daemon on the satellite Linux EC2 instance
+            $dockerDaemonLinuxAmi ??= $env:UNICORN_LAB_LINUX_DOCKER_AMI
+            $dockerDaemonLinuxInstanceSize ??= $env:UNICORN_LAB_LINUX_DOCKER_INSTANCE_SIZE ?? "t3a.medium"
+        
+            if($dockerDaemonLinuxAmi)
+            {
+                $linuxInstance = StartLinuxDockerDaemonInstance -linuxAmiId $dockerDaemonLinuxAmi -instanceType $dockerDaemonLinuxInstanceSize
+                SetDockerHostUserEnvVar -instance $linuxInstance.Instances[0] # Sets "DOCKER_HOST" env var
+            }
         }
     }
 
