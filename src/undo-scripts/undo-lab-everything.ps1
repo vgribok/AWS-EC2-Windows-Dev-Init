@@ -58,6 +58,9 @@ function Cleanup {
     . ./undo-lab-aws-cloud-infra.ps1 -ecrRepoName $ecrRepoName -workshopCfnStack $workshopCfnStacks
     
     Set-Location $scriptLocation
+    . ./undo-lab-sys.ps1
+
+    Set-Location $scriptLocation
     
     $now = get-date
     "Workshop cleanup is completed on $now to the best of authors' ability, but please don't take our word for it still take a look around in AWS Console!"
