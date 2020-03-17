@@ -9,11 +9,16 @@ param(
     [bool] $bootstrapDebug = $false,
 
     # Top group of parameters will change from one lab to another
-    [string] $sampleAppGitHubUrl = "https://github.com/vgribok/modernization-unicorn-store.git",
-    [string] $sampleAppGitBranchName = "cdk-module-completed",
-    [string] $sampleAppSolutionFileName = "UnicornStore.sln",
-    [string] $cdkProjectDirPath = "./infra-as-code/CicdInfraAsCode/src", # put $null here to skip "cdk bootstrap" in the main script
-    [string] $codeCommitRepoName = "Unicorn-Store-Sample-Git-Repo",
+    [string] $labGuideUrl,
+    [string] $sampleAppGitHubUrl,
+    [string] $sampleAppGitBranchName,
+    [string] $sampleAppSolutionFileDir,
+    [string] $sampleAppSolutionFileName,
+    [string] $cdkProjectDirPath, # put $null here to skip "cdk bootstrap" in the main script
+    [string] $codeCommitRepoName,
+    [string] $useDockerDamonLinuxEc2 = $null, # UNICORN_LAB_LINUX_DOCKER_START env var
+    [string] $dockerDaemonLinuxAmi = $null, # UNICORN_LAB_LINUX_DOCKER_AMI env var
+    [string] $dockerDaemonLinuxInstanceSize = $null, # UNICORN_LAB_LINUX_DOCKER_INSTANCE_SIZE env var
 
     # This group of parameters will likely stay unchanged
     [string] $scriptGitRepoUrl = "https://github.com/vgribok/AWS-EC2-Windows-Dev-Init.git",
@@ -27,7 +32,19 @@ Write-Information "Debugging: $bootstrapDebug"
 Push-Location
 Set-Location ([System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Path))
 
-if (-Not $bootstrapDebug) 
+if ($bootstrapDebug)
+{
+    $labGuideUrl = "./docs/en/index.html"
+    $sampleAppGitHubUrl = "https://github.com/vgribok/modernization-unicorn-store.git"
+    $sampleAppGitBranchName = "cdk-module-completed"
+    $sampleAppSolutionFileDir = "."
+    $sampleAppSolutionFileName = "UnicornStore.sln"
+    $cdkProjectDirPath = "./infra-as-code/CicdInfraAsCode/src" # put $null here to skip "cdk bootstrap" in the main script
+    $codeCommitRepoName = "Unicorn-Store-Sample-Git-Repo"
+    $useDockerDamonLinuxEc2 = $false
+    $dockerDaemonLinuxAmi = $null
+    $dockerDaemonLinuxInstanceSize = "t3a.small"
+}else
 {   
     if(-Not $scriptBranchName)
     {
@@ -55,10 +72,12 @@ if (-Not $bootstrapDebug)
 
 Write-Information "Invoking main workshop initialization script"
 & ./workshop-prep.ps1 `
+    -labGuideUrl $labGuideUrl `
     -redirectToLog $redirectToLog `
     -isDebug $bootstrapDebug `
     -sampleAppGitHubUrl $sampleAppGitHubUrl -sampleAppGitBranchName $sampleAppGitBranchName `
-    -sampleAppSolutionFileName $sampleAppSolutionFileName -cdkProjectDirPath $cdkProjectDirPath `
-    -codeCommitRepoName $codeCommitRepoName
+    -sampleAppSolutionFileDir $sampleAppSolutionFileDir -sampleAppSolutionFileName $sampleAppSolutionFileName -cdkProjectDirPath $cdkProjectDirPath `
+    -codeCommitRepoName $codeCommitRepoName `
+    -useDockerDamonLinuxEc2 $useDockerDamonLinuxEc2 -dockerDaemonLinuxAmi $dockerDaemonLinuxAmi -dockerDaemonLinuxInstanceSize $dockerDaemonLinuxInstanceSize
 
 Pop-Location

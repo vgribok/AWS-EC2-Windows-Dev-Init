@@ -8,14 +8,16 @@ param(
     [string] $logFileName = "aws-workshop-init-script.log",
 
     # Top group of parameters will change from one lab to another
-    [string] $sampleAppGitHubUrl = "https://github.com/vgribok/modernization-unicorn-store.git",
-    [string] $sampleAppGitBranchName = "cdk-module-completed",
-    [string] $sampleAppSolutionFileName = "UnicornStore.sln",
-    [string] $cdkProjectDirPath = "./infra-as-code/CicdInfraAsCode/src", # Need just one CDK project path (in case there are more), from which to run "cdk bootstrap"
-    [string] $codeCommitRepoName = "Unicorn-Store-Sample-Git-Repo",
-    [object] $useDockerDamonLinuxEc2 = $null, # env var UNICORN_LAB_LINUX_DOCKER_START
-    [object] $dockerDaemonLinuxAmi = $null, # env var UNICORN_LAB_LINUX_DOCKER_AMI
-    [object] $dockerDaemonLinuxInstanceSize = $null, # env var UNICORN_LAB_LINUX_DOCKER_INSTANCE_SIZE
+    [string] $labGuideUrl = $null, # UNICORN_LAB_GUIDE_URL env var, file:///C:/Users/Administrator/AWS-workshop-assets/modernization-unicorn-store/docs/en/index.html
+    [string] $sampleAppGitHubUrl, # UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL env var
+    [string] $sampleAppGitBranchName, # UNICORN_LAB_SAMPLE_APP_GIT_BRANCH env var
+    [string] $sampleAppSolutionFileDir, # UNICORN_LAB_SAMPLE_APP_SOLUTION_DIR env var
+    [string] $sampleAppSolutionFileName, # UNICORN_LAB_SAMPLE_APP_SOLUTION_FILE env var
+    [string] $cdkProjectDirPath, # UNICORN_LAB_SAMPLE_APP_CDK_PORJ_DIR, Need just one CDK project path (in case there are more), from which to run "cdk bootstrap"
+    [string] $codeCommitRepoName, # UNICORN_LAB_SAMPLE_APP_CODECOMMIT_REPO_NAME env var
+    [string] $useDockerDamonLinuxEc2, # UNICORN_LAB_LINUX_DOCKER_START env var
+    [string] $dockerDaemonLinuxAmi, # UNICORN_LAB_LINUX_DOCKER_AMI env var
+    [string] $dockerDaemonLinuxInstanceSize, # UNICORN_LAB_LINUX_DOCKER_INSTANCE_SIZE env var
 
     # This group of parameters are likely to stay unchanged from one lab to another
     [string] $workDirectory = "~/AWS-workshop-assets",
@@ -34,14 +36,16 @@ $scriptLocation = [System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Pat
 function InitWorkshop {
     param (
         [string] $scriptLocation,
+        [string] $labGuideUrl,
         [string] $sampleAppGitHubUrl,
         [string] $sampleAppGitBranchName,
+        [string] $sampleAppSolutionFileDir,
         [string] $sampleAppSolutionFileName,
         [string] $cdkProjectDirPath,
         [string] $codeCommitRepoName,
-        [object] $useDockerDamonLinuxEc2,
-        [object] $dockerDaemonLinuxAmi,
-        [object] $dockerDaemonLinuxInstanceSize,
+        [string] $useDockerDamonLinuxEc2,
+        [string] $dockerDaemonLinuxAmi,
+        [string] $dockerDaemonLinuxInstanceSize,
         
         [string] $workDirectory,
         [bool] $isDebug,
@@ -67,90 +71,39 @@ function InitWorkshop {
     . ./sys.ps1
     Pop-Location
 
-    [string[]] $knownEnvVars = @("UNICORN_LAB_INIT_SCRIPT_BRANCH", "UNICORN_LAB_LINUX_DOCKER_AMI", "UNICORN_LAB_LINUX_DOCKER_START", "UNICORN_LAB_LINUX_DOCKER_INSTANCE_SIZE")
+    [string[]] $knownEnvVars = @(
+        "UNICORN_LAB_INIT_SCRIPT_BRANCH",
+        "UNICORN_LAB_GUIDE_URL", "UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL", "UNICORN_LAB_SAMPLE_APP_GIT_BRANCH", 
+        "UNICORN_LAB_SAMPLE_APP_SOLUTION_DIR", "UNICORN_LAB_SAMPLE_APP_SOLUTION_FILE",
+        "UNICORN_LAB_SAMPLE_APP_CDK_PORJ_DIR", "UNICORN_LAB_SAMPLE_APP_CODECOMMIT_REPO_NAME",
+        "UNICORN_LAB_LINUX_DOCKER_START", "UNICORN_LAB_LINUX_DOCKER_AMI", "UNICORN_LAB_LINUX_DOCKER_INSTANCE_SIZE"
+    )
     foreach ($envVarName in $knownEnvVars)
     {
         Write-Information "Env Var: $envVarName=$([System.Environment]::GetEnvironmentVariable($envVarName))"
     }
+
+<#    
+    [object]  = $null, #  env var
+    [object]  = $null, #  env var
+#>
+
+    $labGuideUrl = CoalesceWithEnvVar $labGuideUrl "UNICORN_LAB_GUIDE_URL" # Examples: "http://cdkworkshop.com", "./docs/en/index.html"
+    $sampleAppGitHubUrl = CoalesceWithEnvVar $sampleAppGitHubUrl "UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL" # Example: "https://github.com/vgribok/modernization-unicorn-store.git"
+    $sampleAppGitBranchName = CoalesceWithEnvVar $sampleAppGitBranchName "UNICORN_LAB_SAMPLE_APP_GIT_BRANCH" "master" # Example: "cdk-module-completed"
+    $sampleAppSolutionFileDir = CoalesceWithEnvVar $sampleAppSolutionFileDir "UNICORN_LAB_SAMPLE_APP_SOLUTION_DIR" "." # Relative path from git repo root to where solution is located
+    $sampleAppSolutionFileName = CoalesceWithEnvVar $sampleAppSolutionFileName "UNICORN_LAB_SAMPLE_APP_SOLUTION_FILE" # Example: "UnicornStore.sln". Leave blank to build a directory instead of a file
+    $cdkProjectDirPath = CoalesceWithEnvVar $cdkProjectDirPath "UNICORN_LAB_SAMPLE_APP_CDK_PORJ_DIR" # Example: "./infra-as-code/CicdInfraAsCode/src". Leave blank to skip "cdk bootstrap" command
+    $codeCommitRepoName = CoalesceWithEnvVar $codeCommitRepoName "UNICORN_LAB_SAMPLE_APP_CODECOMMIT_REPO_NAME" "Unicorn-Store-Sample-Git-Repo" # Name of the CodeCommit repo where "git push aws" will push sample code
+    $useDockerDamonLinuxEc2 = CoalesceWithEnvVar $useDockerDamonLinuxEc2 "UNICORN_LAB_LINUX_DOCKER_START" $null # Set to "true" to start remote Docker daemon instance
+    $dockerDaemonLinuxAmi = CoalesceWithEnvVar $dockerDaemonLinuxAmi "UNICORN_LAB_LINUX_DOCKER_AMI" # Example: "ami-XXXXXXXXXXXX"
+    $dockerDaemonLinuxInstanceSize = CoalesceWithEnvVar $dockerDaemonLinuxInstanceSize "UNICORN_LAB_LINUX_DOCKER_INSTANCE_SIZE" "t3a.small"
 
     # Reset user password to counteract AWS initialization scrips
     SetLocalUserPassword -username $systemUserName -password $systemSecretWord -isDebug $isDebug
 
-    Push-Location
-
-    if($IsWindows)
-    {
-        if($useDockerDamonLinuxEc2 -or $env:UNICORN_LAB_LINUX_DOCKER_START)
-        {   # Start Docker remote daemon on the satellite Linux EC2 instance
-            $dockerDaemonLinuxAmi ??= $env:UNICORN_LAB_LINUX_DOCKER_AMI
-            $dockerDaemonLinuxInstanceSize ??= $env:UNICORN_LAB_LINUX_DOCKER_INSTANCE_SIZE ?? "t3a.medium"
-        
-            if($dockerDaemonLinuxAmi)
-            {
-                $linuxInstance = StartLinuxDockerDaemonInstance -linuxAmiId $dockerDaemonLinuxAmi -instanceType $dockerDaemonLinuxInstanceSize
-                SetDockerHostUserEnvVar -instance $linuxInstance # Sets "DOCKER_HOST" env var
-            }
-        }
-    }
-
-    mkdir $workDirectory -ErrorAction SilentlyContinue
-    Write-Information "Created directory `"$workDirectory`""
-
-    # Get sample app source from GitHub
-    Set-Location $workDirectory
-    $retVal = GitCloneAndCheckout -remoteGitUrl $sampleAppGitHubUrl -gitBranchName $sampleAppGitBranchName
-    [string] $sampleAppDirectoryName = CleanupRetVal($retVal) 
-    [string] $sampleAppPath = "$workDirectory/$sampleAppDirectoryName"
-
-    # Update Visual Studio Community License
-    if($IsWindows)
-    {
-        Write-Information "Bringing down stuff from `"$vsLicenseScriptGitHubUrl`""
-        Set-Location $workDirectory
-        [string] $vsLicenseScriptDirectory = GitCloneAndCheckout -remoteGitUrl $vsLicenseScriptGitHubUrl
-        Import-Module "$workDirectory/$vsLicenseScriptDirectory"
-        Set-VSCELicenseExpirationDate -Version $vsVersion
-    }
-
-    # Re-setting EC2 instance to AWS defaults
-    # This launches somewhat long-running AWS instance initialization scripts that gets stuck at 
-    # DISKPART (scary! I know) for a little bit. Just let it finish, don't worry about it.
-    # InitializeEC2Instance 
-
-    # ALL AWS-RELATED ACTIONS SHOULD BE DONE BELOW THIS LINE
-    foreach ($envVarName in $knownEnvVars)
-    {
-        Write-Information "Env Var: $envVarName=$([System.Environment]::GetEnvironmentVariable($envVarName))"
-    }
-
-    # Retrieve Region name, like us-east-1, from EC2 instance metadata
-    if(-Not $awsRegion)
-    {
-        $awsRegion = GetDefaultAwsRegionName
-    }
-    for( ; -Not $awsRegion ; $awsRegion = GetDefaultAwsRegionName)
-    {
-        # no metadata, need to wait to let EC2 initialization script to finish
-        Start-Sleep -s 5
-    }
-    Write-Information "Current AWS region metadata is determined to be `"$awsRegion`""
-
-    # Build sample app
-    Set-Location $sampleAppPath
-    Write-Information "Starting building `"$sampleAppSolutionFileName`""
-    dotnet build $sampleAppSolutionFileName -c DebugPostgres
-    Write-Information "Finished building `"$sampleAppSolutionFileName`""
-
-    # Adding "aws" as a Git remote, pointing to the CodeCommit repo in the current AWS account
-    AddCodeCommitGitRemote -awsRegion $awsRegion -codeCommitRepoName $codeCommitRepoName
-
-    if($cdkProjectDirPath)
-    {
-        # Prepare $cdkProjectDirPath for later use
-        $cdkProjectDirPath = Resolve-Path $cdkProjectDirPath
-    }
-
-    Pop-Location
+    $awsRegion = Coalesce $awsRegion (GetDefaultAwsRegionName)
+    Write-Information "Current AWS region is `"$awsRegion`""
 
     # Create AWS IAM Admin user so we could use aws CLI and AWS VisualStudio toolkit
     [string] $iamUserName = MakeLabUserName -tempIamUserPrefix $tempIamUserPrefix -awsRegion $awsRegion
@@ -165,18 +118,78 @@ function InitWorkshop {
     refreshenv
 
     # Integrate Git and CodeCommit
-    $ignore = CreateCodeCommitGitCredentials -iamUserName $iamUserName -codeCommitCredCreationDelaySeconds $codeCommitCredCreationDelaySeconds
-    ConfigureGitSettings -gitUsername $iamUserName -projectRootDirPath $sampleAppPath -helper "!aws codecommit credential-helper $@"
+    $ignore = CreateCodeCommitGitCredentials -iamUserName $iamUserName -codeCommitCredCreationDelaySeconds $codeCommitCredCreationDelaySeconds    
 
-    if($cdkProjectDirPath)
-    {
-        Write-Information  "Enabling usage of CDK in the `"$awsRegion`" region"
-        Push-Location
-        Set-Location $cdkProjectDirPath
-        cdk bootstrap
-        Write-Information "Enabled CDK for `"$awsRegion`""
-        Pop-Location
+    Push-Location
+
+    # Launch satellite Linux isntance, if necessary, to host remote Docker daemon, enabling "docker build ." on this Windows system
+    if($IsWindows -and $useDockerDamonLinuxEc2 -and $dockerDaemonLinuxAmi)
+    {   # Start Docker remote daemon on the satellite Linux EC2 instance
+        $linuxInstance = StartLinuxDockerDaemonInstance -linuxAmiId $dockerDaemonLinuxAmi -instanceType $dockerDaemonLinuxInstanceSize
+        SetDockerHostUserEnvVar -instance $linuxInstance # Sets "DOCKER_HOST" env var
     }
+
+    mkdir $workDirectory -ErrorAction SilentlyContinue
+    Write-Information "Created directory `"$workDirectory`""
+
+    # Update Visual Studio Community License
+    if($IsWindows)
+    {
+        Write-Information "Bringing down stuff from `"$vsLicenseScriptGitHubUrl`""
+        Set-Location $workDirectory
+        [string] $vsLicenseScriptDirectory = GitCloneAndCheckout -remoteGitUrl $vsLicenseScriptGitHubUrl
+        Import-Module "$workDirectory/$vsLicenseScriptDirectory"
+        Set-VSCELicenseExpirationDate -Version $vsVersion
+    }
+
+    if($sampleAppGitHubUrl)
+    {
+        # Get sample app source from GitHub
+        Set-Location $workDirectory
+        $retVal = GitCloneAndCheckout -remoteGitUrl $sampleAppGitHubUrl -gitBranchName $sampleAppGitBranchName
+        [string] $sampleAppDirectoryName = CleanupRetVal($retVal) 
+        [string] $sampleAppPath = Join-Path $workDirectory $sampleAppDirectoryName
+        [string] $solutionDir = Join-Path $sampleAppPath $sampleAppSolutionFileDir
+        [string] $solutionPath = $sampleAppSolutionFileName ? (Join-Path $solutionDir $sampleAppSolutionFileName) : $solutionDir
+            
+        # Build sample app
+        Set-Location $solutionDir
+        Write-Information "Starting building `"$solutionPath`""
+        if($sampleAppSolutionFileName)
+        {   # Buld a project or a solution
+            dotnet build $sampleAppSolutionFileName -c DebugPostgres
+        }else
+        {   # Build whatever in the directory
+            dotnet build -c DebugPostgres
+        }
+        Write-Information "Finished building `"$solutionPath`""
+
+        Set-Location $sampleAppPath
+
+        $labGuideUrl = Resolve-PathSafe $labGuideUrl
+        CreateDesktopShortcut "Lab Guide" $labGuideUrl
+        CreateDesktopShortcut "Sample App" $solutionPath
+
+        # Adding "aws" as a Git remote, pointing to the CodeCommit repo in the current AWS account
+        AddCodeCommitGitRemote -awsRegion $awsRegion -codeCommitRepoName $codeCommitRepoName
+
+        if($cdkProjectDirPath)
+        {
+            # Prepare $cdkProjectDirPath for later use
+            $cdkProjectDirPath = Resolve-Path $cdkProjectDirPath
+            
+            Write-Information  "Enabling usage of CDK in the `"$awsRegion`" region"
+            Push-Location
+            Set-Location $cdkProjectDirPath
+            cdk bootstrap
+            Write-Information "Enabled CDK for `"$awsRegion`""
+            Pop-Location
+        }
+
+        ConfigureGitSettings -gitUsername $iamUserName -projectRootDirPath $sampleAppPath -helper "!aws codecommit credential-helper $@"
+    }
+
+    Pop-Location
 
     $now = get-date
     "Workshop dev box initialization has finished on $now" 
@@ -198,8 +211,10 @@ if($redirectToLog)
 
     InitWorkshop `
         -scriptLocation $scriptLocation `
+        -labGuideUrl $labGuideUrl `
         -sampleAppGitHubUrl $sampleAppGitHubUrl `
         -sampleAppGitBranchName $sampleAppGitBranchName `
+        -sampleAppSolutionFileDir $sampleAppSolutionFileDir `
         -sampleAppSolutionFileName $sampleAppSolutionFileName `
         -cdkProjectDirPath $cdkProjectDirPath `
         -codeCommitRepoName $codeCommitRepoName `
@@ -223,8 +238,10 @@ if($redirectToLog)
     
     InitWorkshop `
         -scriptLocation $scriptLocation `
+        -labGuideUrl $labGuideUrl `
         -sampleAppGitHubUrl $sampleAppGitHubUrl `
         -sampleAppGitBranchName $sampleAppGitBranchName `
+        -sampleAppSolutionFileDir $sampleAppSolutionFileDir `
         -sampleAppSolutionFileName $sampleAppSolutionFileName `
         -cdkProjectDirPath $cdkProjectDirPath `
         -codeCommitRepoName $codeCommitRepoName `
