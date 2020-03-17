@@ -206,7 +206,7 @@ if($redirectToLog)
         -useDockerDamonLinuxEc2 $useDockerDamonLinuxEc2 `
         -dockerDaemonLinuxAmi $dockerDaemonLinuxAmi `
         -dockerDaemonLinuxInstanceSize $dockerDaemonLinuxInstanceSize `
-
+        `
         -workDirectory $workDirectory `
         -isDebug $isDebug `
         -systemUserName $systemUserName `
@@ -231,7 +231,7 @@ if($redirectToLog)
         -useDockerDamonLinuxEc2 $useDockerDamonLinuxEc2 `
         -dockerDaemonLinuxAmi $dockerDaemonLinuxAmi `
         -dockerDaemonLinuxInstanceSize $dockerDaemonLinuxInstanceSize `
-        
+        `
         -workDirectory $workDirectory `
         -isDebug $isDebug `
         -systemUserName $systemUserName `
