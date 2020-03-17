@@ -13,9 +13,9 @@ param(
     [string] $sampleAppSolutionFileName = "UnicornStore.sln",
     [string] $cdkProjectDirPath = "./infra-as-code/CicdInfraAsCode/src", # Need just one CDK project path (in case there are more), from which to run "cdk bootstrap"
     [string] $codeCommitRepoName = "Unicorn-Store-Sample-Git-Repo",
-    [string] $useDockerDamonLinuxEc2 = $null, # env var UNICORN_LAB_LINUX_DOCKER_START
-    [string] $dockerDaemonLinuxAmi = $null, # env var UNICORN_LAB_LINUX_DOCKER_AMI
-    [string] $dockerDaemonLinuxInstanceSize = $null, # env var UNICORN_LAB_LINUX_DOCKER_INSTANCE_SIZE
+    [object] $useDockerDamonLinuxEc2 = $null, # env var UNICORN_LAB_LINUX_DOCKER_START
+    [object] $dockerDaemonLinuxAmi = $null, # env var UNICORN_LAB_LINUX_DOCKER_AMI
+    [object] $dockerDaemonLinuxInstanceSize = $null, # env var UNICORN_LAB_LINUX_DOCKER_INSTANCE_SIZE
 
     # This group of parameters are likely to stay unchanged from one lab to another
     [string] $workDirectory = "~/AWS-workshop-assets",
@@ -39,9 +39,9 @@ function InitWorkshop {
         [string] $sampleAppSolutionFileName,
         [string] $cdkProjectDirPath,
         [string] $codeCommitRepoName,
-        [string] $useDockerDamonLinuxEc2,
-        [string] $dockerDaemonLinuxAmi,
-        [string] $dockerDaemonLinuxInstanceSize,
+        [object] $useDockerDamonLinuxEc2,
+        [object] $dockerDaemonLinuxAmi,
+        [object] $dockerDaemonLinuxInstanceSize,
         
         [string] $workDirectory,
         [bool] $isDebug,
