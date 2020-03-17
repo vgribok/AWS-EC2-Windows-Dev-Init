@@ -281,7 +281,8 @@ function StartLinuxDockerDaemonInstance {
     [string] $subnetId = Get-EC2InstanceMetadata -Path "/network/interfaces/macs/$($ec2Mac)/subnet-id"
     [string] $securityGroupIds = Get-EC2InstanceMetadata -Path "/network/interfaces/macs/$($ec2Mac)/security-group-ids"
 
-    $tagSpec = CreateEc2Tag -tagName "Name" -tagValue (MakeLinuxInstanceName)
+    [string] $linuxInstanceName = MakeLinuxInstanceName
+    $tagSpec = CreateEc2Tag -tagName "Name" -tagValue $linuxInstanceName
 
     $linuxInstance = New-EC2Instance `
         -ImageId $linuxAmiId `
@@ -289,6 +290,8 @@ function StartLinuxDockerDaemonInstance {
         -InstanceType $instanceType `
         -SecurityGroupId $securityGroupIds `
         -TagSpecifications $tagSpec
+
+    Write-Information "Started instance `"$linuxInstanceName`" ($($linuxInstance.Instances[0]))"
 
     return $linuxInstance
 }
