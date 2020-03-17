@@ -268,6 +268,26 @@ function CreateEc2Tag {
     return $tagSpec
 }
 
+function GetFirstRunningInstanceByName {
+    param (
+        [Parameter(mandatory=$true)] [string] $instanceName
+    )
+    
+    $existingInstances = GetInstanceByName -ec2InstanceName $instanceName
+
+    [int] $instanceStateRunning = 16
+
+    foreach($instance in $existingInstances)
+    {
+        if($instance.State.Code -eq $instanceStateRunning)
+        {
+            return $instance
+        }
+    }
+
+    return $null
+}
+
 <#
 Starts sattelite Linux EC2 instance in the same vpc/subnet/securitygroup
 #>
@@ -277,21 +297,30 @@ function StartLinuxDockerDaemonInstance {
         [Parameter(mandatory=$true)] [Amazon.EC2.InstanceType] $instanceType
     )
 
+    [string] $linuxInstanceName = MakeLinuxInstanceName
+
+    $linuxInstance = GetFirstRunningInstanceByName($linuxInstanceName)
+    if($linuxInstance)
+    {
+        return $linuxInstance
+    }
+
     [string] $ec2Mac = Get-EC2InstanceMetadata -Path "/mac"
     [string] $subnetId = Get-EC2InstanceMetadata -Path "/network/interfaces/macs/$($ec2Mac)/subnet-id"
     [string] $securityGroupIds = Get-EC2InstanceMetadata -Path "/network/interfaces/macs/$($ec2Mac)/security-group-ids"
 
-    [string] $linuxInstanceName = MakeLinuxInstanceName
     $tagSpec = CreateEc2Tag -tagName "Name" -tagValue $linuxInstanceName
 
-    $linuxInstance = New-EC2Instance `
+    $startedInstances = New-EC2Instance `
         -ImageId $linuxAmiId `
         -SubnetId $subnetId `
         -InstanceType $instanceType `
         -SecurityGroupId $securityGroupIds `
         -TagSpecifications $tagSpec
 
-    Write-Information "Started instance `"$linuxInstanceName`" ($($linuxInstance.Instances[0]))"
+    $linuxInstance = $startedInstances.Instances[0]
+
+    Write-Information "Started instance $($linuxInstance.InstanceId) (`"$linuxInstanceName`")"
 
     return $linuxInstance
 }
@@ -305,6 +334,8 @@ function SetDockerHostUserEnvVar {
         $instance
     )
 
+    [string] $dockerHostEnvVar = "DOCKER_HOST"
+
     if($instance)
     {
         [string] $dockerHostEnvVarValue = "tcp://$($instance.PrivateIpAddress):2375" #DOCKER_HOST="tcp://172.31.9.24:2375"
@@ -312,8 +343,10 @@ function SetDockerHostUserEnvVar {
         [string] $dockerHostEnvVarValue = $null
     }
 
-    [System.Environment]::SetEnvironmentVariable("DOCKER_HOST", $dockerHostEnvVarValue, [System.EnvironmentVariableTarget]::User)
-    [System.Environment]::SetEnvironmentVariable("DOCKER_HOST", $dockerHostEnvVarValue, [System.EnvironmentVariableTarget]::Process)
+    [System.Environment]::SetEnvironmentVariable($dockerHostEnvVar, $dockerHostEnvVarValue, [System.EnvironmentVariableTarget]::User)
+    [System.Environment]::SetEnvironmentVariable($dockerHostEnvVar, $dockerHostEnvVarValue, [System.EnvironmentVariableTarget]::Process)
+
+    Write-Information "Env var set: $dockerHostEnvVar=$($dockerHostEnvVarValue ?? "null")"
 }
 
 function GetInstanceByName {
@@ -343,15 +376,15 @@ function TerminateInstanceByName {
     }
 }
 
-<#
-$hkw = TerminateInstanceByName(MakeLinuxInstanceName)
-SetDockerHostUserEnvVar
-#>
+
+#$hkw = TerminateInstanceByName(MakeLinuxInstanceName)
+#SetDockerHostUserEnvVar
 
 <#
 # Starts Linux EC2 hosting Docker daemon
+$linuxAmiId = "ami-089369d591ae701ba"
+$instanceType = "t3a.small"
 $linuxInstance = StartLinuxDockerDaemonInstance -linuxAmiId $linuxAmiId -instanceType $instanceType
-
 # Points to remote Linux Docker host
-SetDockerHostUserEnvVar -instance $linuxInstance.Instances[0]
+SetDockerHostUserEnvVar -instance $linuxInstance
 #>

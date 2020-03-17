@@ -88,7 +88,7 @@ function InitWorkshop {
             if($dockerDaemonLinuxAmi)
             {
                 $linuxInstance = StartLinuxDockerDaemonInstance -linuxAmiId $dockerDaemonLinuxAmi -instanceType $dockerDaemonLinuxInstanceSize
-                SetDockerHostUserEnvVar -instance $linuxInstance.Instances[0] # Sets "DOCKER_HOST" env var
+                SetDockerHostUserEnvVar -instance $linuxInstance # Sets "DOCKER_HOST" env var
             }
         }
     }
