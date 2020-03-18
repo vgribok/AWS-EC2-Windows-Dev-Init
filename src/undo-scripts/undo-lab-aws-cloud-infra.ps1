@@ -16,7 +16,7 @@ ConfigureCurrentAwsRegion -profileName $null
 
 # Delete CFN stacks created in the course of the lab
 $workshopCfnStacks = CoalesceWithEnvVar $workshopCfnStacks "UNICORN_LAB_AWS_RIP_CFNS"
-if($cfnStacksToDelete)
+if($workshopCfnStacks)
 {
     [string[]] $cfnStacksToDelete = $workshopCfnStacks.Split(",")
 
