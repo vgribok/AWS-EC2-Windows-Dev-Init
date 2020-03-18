@@ -79,7 +79,7 @@ Write-Information "Invoking main workshop initialization script"
     -isDebug $bootstrapDebug `
     -sampleAppGitHubUrl $sampleAppGitHubUrl -sampleAppGitBranchName $sampleAppGitBranchName `
     -sampleAppSolutionFileDir $sampleAppSolutionFileDir -sampleAppSolutionFileName $sampleAppSolutionFileName -sampleAppBuildConfiguration $sampleAppBuildConfiguration `
-    -cdkProjectDirPath $cdkProjectDirPath 
+    -cdkProjectDirPath $cdkProjectDirPath `
     -codeCommitRepoName $codeCommitRepoName `
     -useDockerDamonLinuxEc2 $useDockerDamonLinuxEc2 -dockerDaemonLinuxAmi $dockerDaemonLinuxAmi -dockerDaemonLinuxInstanceSize $dockerDaemonLinuxInstanceSize
 
