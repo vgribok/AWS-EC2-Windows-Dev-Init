@@ -85,11 +85,6 @@ function InitWorkshop {
         Write-Information "Env Var: $envVarName=$([System.Environment]::GetEnvironmentVariable($envVarName))"
     }
 
-<#    
-    [object]  = $null, #  env var
-    [object]  = $null, #  env var
-#>
-
     $labGuideUrl = CoalesceWithEnvVar $labGuideUrl "UNICORN_LAB_GUIDE_URL" # Examples: "http://cdkworkshop.com", "./docs/en/index.html"
     $sampleAppGitHubUrl = CoalesceWithEnvVar $sampleAppGitHubUrl "UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL" # Example: "https://github.com/vgribok/modernization-unicorn-store.git"
     $sampleAppGitBranchName = CoalesceWithEnvVar $sampleAppGitBranchName "UNICORN_LAB_SAMPLE_APP_GIT_BRANCH" "master" # Example: "cdk-module-completed"
@@ -101,7 +96,7 @@ function InitWorkshop {
     $useDockerDamonLinuxEc2 = CoalesceWithEnvVar $useDockerDamonLinuxEc2 "UNICORN_LAB_LINUX_DOCKER_START" $null # Set to "true" to start remote Docker daemon instance
     $dockerDaemonLinuxAmi = CoalesceWithEnvVar $dockerDaemonLinuxAmi "UNICORN_LAB_LINUX_DOCKER_AMI" # Example: "ami-XXXXXXXXXXXX"
     $dockerDaemonLinuxInstanceSize = CoalesceWithEnvVar $dockerDaemonLinuxInstanceSize "UNICORN_LAB_LINUX_DOCKER_INSTANCE_SIZE" "t3a.small"
-
+    
     # Reset user password to counteract AWS initialization scrips
     SetLocalUserPassword -username $systemUserName -password $systemSecretWord -isDebug $isDebug
 
@@ -153,10 +148,12 @@ function InitWorkshop {
         [string] $sampleAppDirectoryName = CleanupRetVal($retVal) 
         [string] $sampleAppPath = Join-Path $workDirectory $sampleAppDirectoryName
         [string] $solutionDir = Join-Path $sampleAppPath $sampleAppSolutionFileDir
-        [string] $solutionPath = $sampleAppSolutionFileName ? (Join-Path $solutionDir $sampleAppSolutionFileName) : $solutionDir
             
         # Build sample app
         Set-Location $solutionDir
+        $solutionDir = $pwd
+        [string] $solutionPath = $sampleAppSolutionFileName ? (Join-Path $solutionDir $sampleAppSolutionFileName) : $solutionDir
+
         Write-Information "Starting building `"$solutionPath`""
         if($sampleAppSolutionFileName)
         {   # Buld a project or a solution
@@ -169,7 +166,6 @@ function InitWorkshop {
 
         Set-Location $sampleAppPath
 
-        $labGuideUrl = Resolve-PathSafe $labGuideUrl
         CreateDesktopShortcut "Lab Guide" $labGuideUrl
         CreateDesktopShortcut "Sample App" $solutionPath
 

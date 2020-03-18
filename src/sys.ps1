@@ -99,13 +99,35 @@ function IsWebUri($address) {
 
 function GetShortcutPath {
     param(
-        [Parameter(mandatory=$true)] [string] $shortcutText,
-        [Parameter(mandatory=$true)] [object] $uri
+        [Parameter(mandatory=$true)] [string] $shortcutName,
+        [string] $uriOrExt = $null
     )
 
+    if($uriOrExt)
+    {
+        [string] $uriOrExtLower = $uriOrExt.ToLowerInvariant()
+
+        if($uriOrExtLower.EndsWith(".lnk") -or $uriOrExtLower.EndsWith(".url"))
+        {
+            $shortcutFileExt = $uriOrExt
+        }else
+        {
+            $shortcutFileExt = (IsWebUri $uriOrExt) ? ".url" : ".lnk"
+        }
+    }else {
+        $shortcutFileExt = ""
+    }
+
     [string] $desktopPath = [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Desktop)
-    $shortcutFileExt = (IsWebUri $uri) ? ".url" : ".lnk"
-    return Join-Path $desktopPath ($shortcutText + $shortcutFileExt)
+    return Join-Path $desktopPath ($shortcutName + $shortcutFileExt)
+}
+
+function Resolve-PathSafe {
+    param (
+        [Parameter(mandatory=$true)] [string] $path
+    )
+
+    return (IsUri $path) ? $path : $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($path)
 }
 
 function CreateDesktopShortcut {
@@ -124,10 +146,10 @@ function CreateDesktopShortcut {
     [string] $shortcurPath = GetShortcutPath $shortcutText $uri
     
     $ShortCut = $Shell.CreateShortcut($shortcurPath)
-    $ShortCut.TargetPath=$uri
+    $ShortCut.TargetPath = Resolve-PathSafe $uri
     $ShortCut.Save()
 
-    Write-Information "Created `"$shortcurPath`" shortcut pointing to `"$uri`""
+    Write-Information "Created `"$shortcurPath`" shortcut pointing to `"$($ShortCut.TargetPath)`""
 }
 
 function DeleteDesktopShortcut {
@@ -145,18 +167,4 @@ function DeleteDesktopShortcut {
     Remove-Item $shortcurPath -Force
 
     Write-Information "Removed shortcut `"$shortcurPath`""
-}
-
-function Resolve-PathSafe {
-    param (
-        [Parameter(mandatory=$true)] [string] $path
-    )
-    
-    if(IsUri $path)
-    {
-        return $path
-    }
-
-    [System.Environment]::CurrentDirectory = $pwd
-    return [System.IO.Path]::GetFullPath($path)
 }
