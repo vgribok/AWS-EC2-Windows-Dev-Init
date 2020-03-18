@@ -97,6 +97,17 @@ function IsWebUri($address) {
 	return $null -ne $uri.AbsoluteURI -and $uri.Scheme -match '[http|https]'
 }
 
+function GetShortcutPath {
+    param(
+        [Parameter(mandatory=$true)] [string] $shortcutText,
+        [Parameter(mandatory=$true)] [object] $uri
+    )
+
+    [string] $desktopPath = [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Desktop)
+    $shortcutFileExt = (IsWebUri $uri) ? ".url" : ".lnk"
+    return Join-Path $desktopPath ($shortcutText + $shortcutFileExt)
+}
+
 function CreateDesktopShortcut {
     param(
         [Parameter(mandatory=$true)] [string] $shortcutText,
@@ -110,15 +121,30 @@ function CreateDesktopShortcut {
 
     $Shell = New-Object -ComObject ("WScript.Shell")
 
-    [string] $desktopPath = [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Desktop)
-    $shortcutFileExt = (IsWebUri $uri) ? ".url" : ".lnk"
-    [string] $shortcurPath = Join-Path $desktopPath ($shortcutText + $shortcutFileExt)
+    [string] $shortcurPath = GetShortcutPath $shortcutText $uri
     
     $ShortCut = $Shell.CreateShortcut($shortcurPath)
     $ShortCut.TargetPath=$uri
     $ShortCut.Save()
 
     Write-Information "Created `"$shortcurPath`" shortcut pointing to `"$uri`""
+}
+
+function DeleteDesktopShortcut {
+    param(
+        [Parameter(mandatory=$true)] [string] $shortcutText,
+        [Parameter(mandatory=$true)] [object] $uri
+    )
+
+    if(-Not $IsWindows)
+    {
+        return
+    }
+
+    [string] $shortcurPath = GetShortcutPath $shortcutText $uri
+    Remove-Item $shortcurPath -Force
+
+    Write-Information "Removed shortcut `"$shortcurPath`""
 }
 
 function Resolve-PathSafe {

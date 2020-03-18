@@ -13,6 +13,7 @@ param(
     [string] $sampleAppGitBranchName, # UNICORN_LAB_SAMPLE_APP_GIT_BRANCH env var
     [string] $sampleAppSolutionFileDir, # UNICORN_LAB_SAMPLE_APP_SOLUTION_DIR env var
     [string] $sampleAppSolutionFileName, # UNICORN_LAB_SAMPLE_APP_SOLUTION_FILE env var
+    [string] $sampleAppBuildConfiguration, # UNICORN_LAB_SAMPLE_APP_BUILD_CONFIG env var
     [string] $cdkProjectDirPath, # UNICORN_LAB_SAMPLE_APP_CDK_PORJ_DIR, Need just one CDK project path (in case there are more), from which to run "cdk bootstrap"
     [string] $codeCommitRepoName, # UNICORN_LAB_SAMPLE_APP_CODECOMMIT_REPO_NAME env var
     [string] $useDockerDamonLinuxEc2, # UNICORN_LAB_LINUX_DOCKER_START env var
@@ -41,6 +42,7 @@ function InitWorkshop {
         [string] $sampleAppGitBranchName,
         [string] $sampleAppSolutionFileDir,
         [string] $sampleAppSolutionFileName,
+        [string] $sampleAppBuildConfiguration,
         [string] $cdkProjectDirPath,
         [string] $codeCommitRepoName,
         [string] $useDockerDamonLinuxEc2,
@@ -74,7 +76,7 @@ function InitWorkshop {
     [string[]] $knownEnvVars = @(
         "UNICORN_LAB_INIT_SCRIPT_BRANCH",
         "UNICORN_LAB_GUIDE_URL", "UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL", "UNICORN_LAB_SAMPLE_APP_GIT_BRANCH", 
-        "UNICORN_LAB_SAMPLE_APP_SOLUTION_DIR", "UNICORN_LAB_SAMPLE_APP_SOLUTION_FILE",
+        "UNICORN_LAB_SAMPLE_APP_SOLUTION_DIR", "UNICORN_LAB_SAMPLE_APP_SOLUTION_FILE", "UNICORN_LAB_SAMPLE_APP_BUILD_CONFIG",
         "UNICORN_LAB_SAMPLE_APP_CDK_PORJ_DIR", "UNICORN_LAB_SAMPLE_APP_CODECOMMIT_REPO_NAME",
         "UNICORN_LAB_LINUX_DOCKER_START", "UNICORN_LAB_LINUX_DOCKER_AMI", "UNICORN_LAB_LINUX_DOCKER_INSTANCE_SIZE"
     )
@@ -93,6 +95,7 @@ function InitWorkshop {
     $sampleAppGitBranchName = CoalesceWithEnvVar $sampleAppGitBranchName "UNICORN_LAB_SAMPLE_APP_GIT_BRANCH" "master" # Example: "cdk-module-completed"
     $sampleAppSolutionFileDir = CoalesceWithEnvVar $sampleAppSolutionFileDir "UNICORN_LAB_SAMPLE_APP_SOLUTION_DIR" "." # Relative path from git repo root to where solution is located
     $sampleAppSolutionFileName = CoalesceWithEnvVar $sampleAppSolutionFileName "UNICORN_LAB_SAMPLE_APP_SOLUTION_FILE" # Example: "UnicornStore.sln". Leave blank to build a directory instead of a file
+    $sampleAppBuildConfiguration = CoalesceWithEnvVar $sampleAppBuildConfiguration "UNICORN_LAB_SAMPLE_APP_BUILD_CONFIG" "Debug"
     $cdkProjectDirPath = CoalesceWithEnvVar $cdkProjectDirPath "UNICORN_LAB_SAMPLE_APP_CDK_PORJ_DIR" # Example: "./infra-as-code/CicdInfraAsCode/src". Leave blank to skip "cdk bootstrap" command
     $codeCommitRepoName = CoalesceWithEnvVar $codeCommitRepoName "UNICORN_LAB_SAMPLE_APP_CODECOMMIT_REPO_NAME" "Unicorn-Store-Sample-Git-Repo" # Name of the CodeCommit repo where "git push aws" will push sample code
     $useDockerDamonLinuxEc2 = CoalesceWithEnvVar $useDockerDamonLinuxEc2 "UNICORN_LAB_LINUX_DOCKER_START" $null # Set to "true" to start remote Docker daemon instance
@@ -157,10 +160,10 @@ function InitWorkshop {
         Write-Information "Starting building `"$solutionPath`""
         if($sampleAppSolutionFileName)
         {   # Buld a project or a solution
-            dotnet build $sampleAppSolutionFileName -c DebugPostgres
+            dotnet build $sampleAppSolutionFileName -c $sampleAppBuildConfiguration
         }else
         {   # Build whatever in the directory
-            dotnet build -c DebugPostgres
+            dotnet build -c $sampleAppBuildConfiguration
         }
         Write-Information "Finished building `"$solutionPath`""
 
@@ -216,6 +219,7 @@ if($redirectToLog)
         -sampleAppGitBranchName $sampleAppGitBranchName `
         -sampleAppSolutionFileDir $sampleAppSolutionFileDir `
         -sampleAppSolutionFileName $sampleAppSolutionFileName `
+        -sampleAppBuildConfiguration $sampleAppBuildConfiguration `
         -cdkProjectDirPath $cdkProjectDirPath `
         -codeCommitRepoName $codeCommitRepoName `
         -useDockerDamonLinuxEc2 $useDockerDamonLinuxEc2 `
@@ -243,6 +247,7 @@ if($redirectToLog)
         -sampleAppGitBranchName $sampleAppGitBranchName `
         -sampleAppSolutionFileDir $sampleAppSolutionFileDir `
         -sampleAppSolutionFileName $sampleAppSolutionFileName `
+        -sampleAppBuildConfiguration $sampleAppBuildConfiguration `
         -cdkProjectDirPath $cdkProjectDirPath `
         -codeCommitRepoName $codeCommitRepoName `
         -useDockerDamonLinuxEc2 $useDockerDamonLinuxEc2 `
