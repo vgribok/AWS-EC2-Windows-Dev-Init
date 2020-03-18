@@ -33,7 +33,7 @@ foreach ($gitUrl in $gitUrls)
 
 if($IsWindows)
 {
-    [string[]] $desktopShortcuts = "App Sample.lnk", "Lab Guide.lnk", "Lab Guide.url"
+    [string[]] $desktopShortcuts = "Sample App.lnk", "Lab Guide.lnk", "Lab Guide.url"
 
     foreach($desktopShortcut in $desktopShortcuts)
     {
