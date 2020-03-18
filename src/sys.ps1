@@ -78,6 +78,24 @@ function CoalesceWithEnvVar {
     return Coalesce $v1 $defaultValue
 }
 
+function OverrideWithEnvVar {
+    param (
+        [string] $val,
+        [string] $envVar
+    )
+    
+    if($envVar)
+    {
+        [string] $varVal = [System.Environment]::GetEnvironmentVariable($envVar)
+        if($varVal)
+        {
+            $val = $varVal
+        }
+    }
+
+    return $val
+}
+
 function FalseToNull {
     [CmdletBinding()]
     param(

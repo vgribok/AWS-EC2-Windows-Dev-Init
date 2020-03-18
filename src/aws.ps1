@@ -143,8 +143,11 @@ function DeleteCfnStack {
         [Parameter(mandatory=$true)] [string] $cfnStackName
     )
     
-    Remove-CFNStack -StackName $cfnStackName -Force
-    Write-Information "Starting deletion of the `"$cfnStackName`" CloudFormation stack"
+    if($cfnStackName)
+    {
+        Remove-CFNStack -StackName $cfnStackName -Force
+        Write-Information "Starting deletion of the `"$cfnStackName`" CloudFormation stack"
+    }
 }
 
 function DeleteCfnStacks {
@@ -367,6 +370,11 @@ function TerminateInstanceByName {
     param (
         [Parameter(mandatory=$true)] [string] $ec2InstanceName
     )
+
+    if(-Not $ec2InstanceName)
+    {
+        return $null
+    }
 
     $instance = GetInstanceByname -ec2InstanceName $ec2InstanceName
     if($instance)

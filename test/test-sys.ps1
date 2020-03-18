@@ -16,10 +16,10 @@ Describe "CoalesceWithEnvVar test" {
         CoalesceWithEnvVar("Hello!") | Should Be "Hello!"
     }
     It "Must return env var value if first param is null" {
-        CoalesceWithEnvVar -val $null -envVarName "USERPROFILE" -defaultValue "bogus" | Should Be $env:USERPROFILE
+        CoalesceWithEnvVar -val $null -envVarName "PATH" -defaultValue "bogus" | Should Be $env:PATH
     }
     It "Must return env var value if first param is blank string" {
-        CoalesceWithEnvVar -val "" -envVarName "USERPROFILE"  -defaultValue "bogus" | Should Be $env:USERPROFILE
+        CoalesceWithEnvVar -val "" -envVarName "PATH"  -defaultValue "bogus" | Should Be $env:PATH
     }
     It "Must return default value if first two params are nulls" {
         CoalesceWithEnvVar -val $null -envVarName $null -defaultValue "default" | Should Be "default"

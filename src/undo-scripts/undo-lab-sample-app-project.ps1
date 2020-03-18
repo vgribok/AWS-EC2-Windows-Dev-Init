@@ -1,8 +1,7 @@
 param(
     [string] $workDirectory = "~/AWS-workshop-assets",
     [string] $sampleAppGitRepoUrl, # UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL
-    [string] $vsceUrl = "https://github.com/vgribok/VSCELicense.git"
-
+    [string] $vsLicenseScriptGitHubUrl = "https://github.com/vgribok/VSCELicense.git"
 )
 
 Push-Location
@@ -14,7 +13,7 @@ Pop-Location
 $sampleAppGitRepoUrl = CoalesceWithEnvVar $sampleAppGitRepoUrl "UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL"
 
 # Delete directories created by cloning Git repos
-[string[]] $gitUrls = $sampleAppGitRepoUrl, $vsceUrl
+[string[]] $gitUrls = $sampleAppGitRepoUrl, $vsLicenseScriptGitHubUrl
 
 foreach ($gitUrl in $gitUrls) 
 {

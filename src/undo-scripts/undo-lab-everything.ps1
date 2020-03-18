@@ -4,12 +4,9 @@ param(
     [string] $logFileName = "undo-script.log",
 
     # Top group of parameters will change from one lab to another
-    [string] $sampleAppGitHubUrl = "https://github.com/vgribok/modernization-unicorn-store.git",
-    [string] $ecrRepoName = "unicorn-store-app",
-    [string[]] $workshopCfnStacks = @(
-        "Unicorn-Store-CI-CD-PipelineStack",
-        "UnicornSuperstoreStack"
-    ),
+    [string] $sampleAppGitHubUrl,
+    [string] $ecrRepoName,
+    [string] $workshopCfnStacks,
 
     # This group of parameters are likely to stay unchanged from one lab to another
     [string] $workDirectory = "~/AWS-workshop-assets",
@@ -34,7 +31,7 @@ function Cleanup {
      [string] $scriptLocation,
      [string] $sampleAppGitHubUrl,
      [string] $ecrRepoName,
-     [string[]] $workshopCfnStacks,
+     [string] $workshopCfnStacks,
  
      [string] $workDirectory,
      [string] $vsLicenseScriptGitHubUrl,
@@ -44,12 +41,10 @@ function Cleanup {
     $now = get-date
     "Cleaup started on $now"
     
-    [string[]] $gitUrls = @( $sampleAppGitHubUrl, $vsLicenseScriptGitHubUrl)
-    
     Push-Location
     
     Set-Location $scriptLocation
-    . ./undo-lab-sample-app-project.ps1 -workDirectory $workDirectory -gitUrls $gitUrls
+    . ./undo-lab-sample-app-project.ps1 -workDirectory $workDirectory -sampleAppGitHubUrl $sampleAppGitHubUrl -vsLicenseScriptGitHubUrl $vsLicenseScriptGitHubUrl
     
     Set-Location $scriptLocation
     . ./undo-lab-credentials.ps1 -tempIamUserPrefix $tempIamUserPrefix
