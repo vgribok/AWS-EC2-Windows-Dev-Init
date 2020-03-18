@@ -51,9 +51,6 @@ function Cleanup {
     
     Set-Location $scriptLocation
     . ./undo-lab-aws-cloud-infra.ps1 -ecrRepoName $ecrRepoName -workshopCfnStack $workshopCfnStacks
-    
-    Set-Location $scriptLocation
-    . ./undo-lab-sys.ps1
 
     Set-Location $scriptLocation
     
