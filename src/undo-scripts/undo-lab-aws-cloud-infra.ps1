@@ -12,12 +12,18 @@ Set-Location ([System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Path))
 . ../sys.ps1
 Pop-Location
 
-$workshopCfnStacks = CoalesceWithEnvVar $workshopCfnStacks "UNICORN_LAB_AWS_RIP_CFNS"
-[string[]] $cfnStacksToDelete = $workshopCfnStacks.Split(",")
-
 ConfigureCurrentAwsRegion -profileName $null
-DeleteCfnStacks($cfnStacksToDelete)
 
+# Delete CFN stacks created in the course of the lab
+$workshopCfnStacks = CoalesceWithEnvVar $workshopCfnStacks "UNICORN_LAB_AWS_RIP_CFNS"
+if($cfnStacksToDelete)
+{
+    [string[]] $cfnStacksToDelete = $workshopCfnStacks.Split(",")
+
+    DeleteCfnStacks($cfnStacksToDelete)
+}
+
+# Delete ECR repo because non-empty repos won't be deleted by CFN templates that created them
 $ecrRepoName = CoalesceWithEnvVar $ecrRepoName "UNICORN_LAB_AWS_RIP_ECR"
 if($ecrRepoName)
 {
