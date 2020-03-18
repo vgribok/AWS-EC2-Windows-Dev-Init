@@ -14,7 +14,7 @@ param(
     [string] $sampleAppSolutionFileDir, # UNICORN_LAB_SAMPLE_APP_SOLUTION_DIR env var
     [string] $sampleAppSolutionFileName, # UNICORN_LAB_SAMPLE_APP_SOLUTION_FILE env var
     [string] $sampleAppBuildConfiguration, # UNICORN_LAB_SAMPLE_APP_BUILD_CONFIG env var
-    [string] $cdkProjectDirPath, # UNICORN_LAB_SAMPLE_APP_CDK_PORJ_DIR, Need just one CDK project path (in case there are more), from which to run "cdk bootstrap"
+    [string] $cdkProjectDirPath, # UNICORN_LAB_SAMPLE_APP_CDK_PROJ_DIR, Need just one CDK project path (in case there are more), from which to run "cdk bootstrap"
     [string] $codeCommitRepoName, # UNICORN_LAB_SAMPLE_APP_CODECOMMIT_REPO_NAME env var
     [string] $useDockerDamonLinuxEc2, # UNICORN_LAB_LINUX_DOCKER_START env var
     [string] $dockerDaemonLinuxAmi, # UNICORN_LAB_LINUX_DOCKER_AMI env var
@@ -85,7 +85,7 @@ function InitWorkshop {
     $sampleAppSolutionFileDir = CoalesceWithEnvVar $sampleAppSolutionFileDir "UNICORN_LAB_SAMPLE_APP_SOLUTION_DIR" "." # Relative path from git repo root to where solution is located
     $sampleAppSolutionFileName = CoalesceWithEnvVar $sampleAppSolutionFileName "UNICORN_LAB_SAMPLE_APP_SOLUTION_FILE" # Example: "UnicornStore.sln". Leave blank to build a directory instead of a file
     $sampleAppBuildConfiguration = CoalesceWithEnvVar $sampleAppBuildConfiguration "UNICORN_LAB_SAMPLE_APP_BUILD_CONFIG" "Debug"
-    $cdkProjectDirPath = CoalesceWithEnvVar $cdkProjectDirPath "UNICORN_LAB_SAMPLE_APP_CDK_PORJ_DIR" # Example: "./infra-as-code/CicdInfraAsCode/src". Leave blank to skip "cdk bootstrap" command
+    $cdkProjectDirPath = CoalesceWithEnvVar $cdkProjectDirPath "UNICORN_LAB_SAMPLE_APP_CDK_PROJ_DIR" # Example: "./infra-as-code/CicdInfraAsCode/src". Leave blank to skip "cdk bootstrap" command
     $codeCommitRepoName = CoalesceWithEnvVar $codeCommitRepoName "UNICORN_LAB_SAMPLE_APP_CODECOMMIT_REPO_NAME" "Unicorn-Store-Sample-Git-Repo" # Name of the CodeCommit repo where "git push aws" will push sample code
     $useDockerDamonLinuxEc2 = CoalesceWithEnvVar $useDockerDamonLinuxEc2 "UNICORN_LAB_LINUX_DOCKER_START" $null # Set to "true" to start remote Docker daemon instance
     $dockerDaemonLinuxAmi = CoalesceWithEnvVar $dockerDaemonLinuxAmi "UNICORN_LAB_LINUX_DOCKER_AMI" # Example: "ami-XXXXXXXXXXXX"
