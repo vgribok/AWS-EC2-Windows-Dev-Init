@@ -1,16 +1,20 @@
-# Overview
+## Overview
 
-A set of PowerShell 6 (Core) scripts preparing an AWS EC2 Windows instances (VM) to serve as Workshop/Lab development box, with AWS CLI, AWS Visual Studio Dev Toolbox, AWS user credentials, etc. on the box.
+This is a set of PowerShell 7 scripts preparing an AWS EC2 Windows instances (VM) to serve as Workshop/Lab .NET development box, with AWS CLI, AWS Visual Studio Dev Toolbox, AWS user credentials, etc. on the box.
 
-The main function of the script is to minimize the amount of boilerplate steps workshop attendees need to take in order to get an EC2 instance confgiured for .NET development focused workshops, i.e. *creating IAM administrator user* and configure its AccessKey on the system, so that AWS CLI, PowerShell commands and AWS SDK could run on the system and create AWS resources in the same account where EC2 is running.
+The main functions of the script are:
+1. Minimize the amount of boilerplate steps workshop attendees need to take in order to get an EC2 instance confgiured for .NET development focused workshops, i.e. creating IAM administrator user and configure its AccessKey on the system, so that AWS CLI, PowerShell commands and AWS SDK could run on the system and create AWS resources in the same account where EC2 is running.
+2. Enable Workshop authors to take this dev box(es), and parameterize it via EC2 user-data scripts setting environment variables (see below), to pull and build any .NET Core sample app living on GitHub or any other public Git repo.
 
 The script also creates and configures CodeCommit credentials, along with the `aws` Git remote, so that workshop attendee could run "`git push aws`".
+
+These scripts DO NOT ISNTALL SOFTWARE, like Git or Visual Studio, on the EC2 instance (VM). The AMI image used for creating the VM should have all necessary software installed.
 
 ## DISCLAIMER: NO SECURITY AND NO GUARANTEE
 
 __The VM will be absolutely NOT SECURE__ as it will have "Passw0rd" for administrator/root password, and as such an EC2 VM initialized with this script must reside in a locked-down AWS security group and should be shut down right after workshop is completed!
 
-Contributors to thes repository will bare no responsibility if a VM initialized with this script causes any harm or damage whatsoever. 
+Contributors to this repository will bare no liability or responsibility if a VM initialized with this script causes any harm or damage whatsoever. 
 
 Use at your own risk.
 
@@ -20,9 +24,10 @@ Use these scripts for EC2 initialization and cleanup. Both scripts are idempoten
 
 ### EC2 initialization
 
-* Copy [aws-ec2-lab-dev-box-bootstrap.ps1](./src/aws-ec2-lab-dev-box-bootstrap.ps1) file to the destination EC2 instance that has Role with the *AdministratorAccess* IAM policy. The IMA needs to have all prerequisite development tools installed: Visual Studio, SQL Server, PowerShell 6, AWS Toolkit, etc.
-* If your workshop sample app is on GitHub, you can modify top part (parameters) of the script to point to your sample app.
-* Run the script before the workshop. It will get latest versions of the rest of the scripts from GitHub.
+* Copy [aws-ec2-lab-dev-box-bootstrap.ps1](./src/aws-ec2-lab-dev-box-bootstrap.ps1) file to the destination EC2 instance that has Role with the *AdministratorAccess* IAM policy. The IMA needs to have all prerequisite development tools installed: Visual Studio, SQL Server, PowerShell 7, AWS Toolkit, etc.
+* If your workshop sample app is on GitHub or in another public Git repo, you can modify top part (parameters) of the script to point to your sample app.
+* Run the script before the workshop. It will get latest versions of the rest of the scripts from GitHub. 
+* If you maintain an EC2 instance with .NET development tools for workshop/lab purposes, consider running the initialization part of the script from Windows Task Scheduler, rights after the main AWS EC2 initialization script. Run the script under the "Administrator" user account, if running non-interactively.
 
 Re-Run the scripts if something didn't work, and create an issue in the [backlog](https://github.com/vgribok/AWS-EC2-Windows-Dev-Init/issues).
 
@@ -36,12 +41,69 @@ Use Windows Task Scheduler to run "`C:\Windows\System32\net.exe user Administrat
 
 The cleanup script will destroy AWS infrastructure created by specified CloudFormation templates, destroy an ECR repo, delete lab user, un-configure AWS credentials on the EC2, and in general will take the system to the state where no AWS CLI, PowreShell or SDK functions can run.
 
+# Using EC2 User Data for passing paramters to these scripts baked into an AMI
+
+If your AWS VM (EC2) image, an AMI, has these scripts, their behavior can be driven by supplying a script like this as [EC2 instance user data](https://aws.amazon.com/premiumsupport/knowledge-center/ec2-windows-run-command-new/):
+```ps1
+<powershell>
+[string[][]] $envVars = @(
+    @( "ARRAY-STARTER", "DO NOT DELETE THIS LINE" ),
+    @( "UNICORN_LAB_LINUX_DOCKER_AMI", "ami-089311111ae951ba" ),
+    @( "UNICORN_LAB_LINUX_DOCKER_START", "true" ),
+    @( "UNICORN_LAB_LINUX_DOCKER_INSTANCE_SIZE", "t3a.small" ),
+)
+foreach($pair in $envVars)
+{
+    if($pair -and $pair[0] -and $pair[0] -ne "ARRAY-STARTER")
+    {
+        [System.Environment]::SetEnvironmentVariable($pair[0], $pair[1], [System.EnvironmentVariableTarget]::Machine)
+    }
+}
+</powershell>
+```
+#### Environment Variables as Parameters
+All these environment variables are optional. If none are set, the resulting development system will have all the development tool, except Docker for Linux containers, but no sample application and not desktop shortcuts to the lab guide.
+
+* **UNICORN_LAB_INIT_SCRIPT_BRANCH** - Git branch name for this repo. If not supplied, "master" is used. This variable is used only by the [bootstrapping script](./src/aws-ec2-lab-dev-box-bootstrap.ps1), to check enable debugging of these scripts w/o fouling up "master" used as production scripts.
+
+##### Sample App Parameters
+
+* **UNICORN_LAB_GUIDE_URL** - either an internet URL or a file path to the home page of the workshop instructions/lab guide. If relative file path is used, it should be relative to the sample application location (see below). A desktop shortcut named "Lab Guide" is created pointing to the location provided as a value of this environment variable.
+
+* **UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL** - sample application Git repository URL. If specified, this git repo will be `git clone` w/o authentication, into a user directory (~/, %USERPROFILE%). If not specified, no sample app will be cloned.
+
+* **UNICORN_LAB_SAMPLE_APP_GIT_BRANCH** specifies sample application Git branch. If not set, "master" is used. Applies only if UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL was set.
+
+* **UNICORN_LAB_SAMPLE_APP_SOLUTION_DIR** - relative path to a *directory* where sample app's main project or Visual Studio solution file is. If not supplied, main repo direcotry assumed to be the one. Applies only if UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL was set.
+
+* **UNICORN_LAB_SAMPLE_APP_SOLUTION_FILE** - name of the sample app Visual Studio project or solution file. `dotnet build` will be run for this file. If not specified, `dotnet build` will run against the UNICORN_LAB_SAMPLE_APP_SOLUTION_DIR. The script will not terminate if build has failed. Applies only if UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL was set.
+
+* **UNICORN_LAB_SAMPLE_APP_BUILD_CONFIG** - sample app's build configuration, Like Release or Debug. If not specified *Debug* is used. Applies only if UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL was set.
+
+* **UNICORN_LAB_SAMPLE_APP_CDK_PROJ_DIR** - relative path to any AWS .NET CDK project in the sample application solution. It serves as an indicator that CDK will be used and to run `cdk bootstrap`, which reqruies a CDK project even though it's not project-specific. If not supplied, `cdk bootstrap` command will not run for AWS Region where the EC2 is running. Applies only if UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL was set.
+
+* **UNICORN_LAB_SAMPLE_APP_CODECOMMIT_REPO_NAME** - configures "aws" git remote for sample app, pointing to an AWS CodeCommit repo of the specified name in the region where the system runs. If not specified, "Unicorn-Store-Sample-Git-Repo" is used. Applies only if UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL was set.
+
+##### Docker Daemon Linux EC2 Parameters
+
+* **UNICORN_LAB_LINUX_DOCKER_START** - if set (not blank), indicates that a satellite Linux EC2 instance hosting remote Docker daemon needs to be started. This enables using Linux Docker containers on Windows, making possible to run commands like `docker build`, `docker images`, `docker ps` to work with Linux containers on the VM.
+
+* **UNICORN_LAB_LINUX_DOCKER_AMI** - a Linux AMI Id with Docker, that will be started as a remote Docker daemon. This Linux instance will be launched in the same VPC and SecurityGroup as where the Windows EC2 instance is. "DOCKER_HOST" header will be set on Windows instance to point to the private IP address of the Linux instance. Applies only when UNICORN_LAB_LINUX_DOCKER_START was set.
+  
+* **UNICORN_LAB_LINUX_DOCKER_INSTANCE_SIZE** - AWS EC2 instance type for the Docker daemon Linux EC2 instance. If not specified, "[t3a.small](https://ec2instances.info/?filter=t3a.small)" is used. Applies only when UNICORN_LAB_LINUX_DOCKER_START was set.
+
+##### Cleanup/Undo Script Parameters
+
+* **UNICORN_LAB_AWS_RIP_ECR** - an Elastic Container Registry name to be deleted by the undo/clean-up script. Usually used when CDK/CloudFormation is used for a lab, to create an ECR repo. CFN will not destroy an ECR if it's not empty. Does nothing if not specified.
+
+* **UNICORN_LAB_AWS_RIP_CFNS** - a comma-delimited list of CloudFormation stacks to be deleted by the undo/clean-up scripts. Usually used when CDK/CloudFormation is used for a lab. Does nothing if not specified.
+
 ## How To Improve These Scripts
 
 ### Prerequisites
 
-* Use [VsCode with PowerShell Extension](https://docs.microsoft.com/en-us/powershell/scripting/components/vscode/using-vscode?view=powershell-6)
-* [Ensure your VsCode PowerShell session runs in PowerShell 6 (Core)](https://docs.microsoft.com/en-us/powershell/scripting/components/vscode/using-vscode?view=powershell-6#choosing-a-version-of-powershell-to-use-with-the-extension) by checking `$PSVersionTable.PSVersion.Major` value, which should be "6".
+* Use [VsCode with PowerShell Extension](https://docs.microsoft.com/en-us/powershell/scripting/components/vscode/using-vscode?view=powershell-7)
+* [Ensure your VsCode PowerShell session runs in PowerShell 7](https://docs.microsoft.com/en-us/powershell/scripting/components/vscode/using-vscode?view=powershell-7#choosing-a-version-of-powershell-to-use-with-the-extension) by checking `$PSVersionTable.PSVersion.Major` value, which should be "7".
 
 ### How to Develop/Debug These Scripts
 
