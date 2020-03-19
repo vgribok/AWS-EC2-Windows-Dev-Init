@@ -1,6 +1,6 @@
 param(
     [string] $redirectToLog = $null,
-    [string] $cleanupConfirmed = $null,
+    [string] $cleanupConfirmed = $null, # 1 - shutdown after cleanup, 2 - regular cleanup
     [string] $logFileName = "undo-script.log",
 
     # Top group of parameters will change from one lab to another
@@ -16,12 +16,14 @@ param(
 
 if(-Not $cleanupConfirmed)
 {
-    $input = Read-Host -Prompt "[Y/N] Are you sure you want to de-provision lab AWS resources? The lab cannot be restarted before this instance is re-initialized"
-    if($input.ToLowerInvariant() -ne "y")
-    {
-        "Cleanup cancelled."
-        return
-    }
+    $cleanupConfirmed = Read-Host -Prompt "Please choose an option:`n`nPress 1 if you need to clean up and plan to either shutdown or reboot the instance afterwards.`nPress 2 for regular cleanup. Enables re-initializing the system by running init scripts manually.`nPress any other key to cancel cleaup.`n`n/1/2/x>"
+}
+
+switch($cleanupConfirmed.ToLowerInvariant())
+{
+    1 { $cleanupConfirmed = "shutdown" }
+    2 { $cleanupConfirmed = "regular" }
+    Default { return }
 }
 
 $scriptLocation = [System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Path)
@@ -32,6 +34,7 @@ function Cleanup {
      [string] $sampleAppGitHubUrl,
      [string] $ecrRepoName,
      [string] $workshopCfnStacks,
+     [object] $cleanupConfirmed,
  
      [string] $workDirectory,
      [string] $vsLicenseScriptGitHubUrl,
@@ -39,7 +42,7 @@ function Cleanup {
     )
 
     $now = get-date
-    "Cleaup started on $now"
+    Write-Information "Cleaup started on $now"
     
     Push-Location
     
@@ -51,6 +54,12 @@ function Cleanup {
     
     Set-Location $scriptLocation
     . ./undo-lab-aws-cloud-infra.ps1 -ecrRepoName $ecrRepoName -workshopCfnStack $workshopCfnStacks
+
+    if($cleanupConfirmed -eq "shutdown")
+    {   # Erase environment variables
+        Set-Location $scriptLocation
+        . ./undo-lab-sys.ps1        
+    }
 
     Set-Location $scriptLocation
     
@@ -79,6 +88,7 @@ if($redirectToLog)
         -sampleAppGitHubUrl $sampleAppGitHubUrl `
         -ecrRepoName $ecrRepoName `
         -workshopCfnStacks $workshopCfnStacks `
+        -cleanupConfirmed $cleanupConfirmed `
         -workDirectory $workDirectory `
         -vsLicenseScriptGitHubUrl $vsLicenseScriptGitHubUrl `
         -tempIamUserPrefix $tempIamUserPrefix  `
@@ -91,6 +101,7 @@ if($redirectToLog)
         -sampleAppGitHubUrl $sampleAppGitHubUrl `
         -ecrRepoName $ecrRepoName `
         -workshopCfnStacks $workshopCfnStacks `
+        -cleanupConfirmed $cleanupConfirmed `
         -workDirectory $workDirectory `
         -vsLicenseScriptGitHubUrl $vsLicenseScriptGitHubUrl `
         -tempIamUserPrefix $tempIamUserPrefix
