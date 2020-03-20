@@ -3,12 +3,12 @@
 This is a set of PowerShell 7 scripts preparing an AWS EC2 Windows instances (VM) to serve as Workshop/Lab .NET development box, with AWS CLI, AWS Visual Studio Dev Toolbox, AWS user credentials, etc. on the box.
 
 The main functions of the script are:
-1. Minimize the amount of boilerplate steps workshop attendees need to take in order to get an EC2 instance confgiured for .NET development focused workshops, i.e. creating IAM administrator user and configure its AccessKey on the system, so that AWS CLI, PowerShell commands and AWS SDK could run on the system and create AWS resources in the same account where EC2 is running.
+1. Minimize the amount of boilerplate steps workshop attendees need to take in order to get an EC2 instance configured for .NET development focused workshops, i.e. creating IAM administrator user and configure its AccessKey on the system, so that AWS CLI, PowerShell commands and AWS SDK could run on the system and create AWS resources in the same account where EC2 is running.
 2. Enable Workshop authors to take this dev box(es), and parameterize it via EC2 user-data scripts setting environment variables (see below), to pull and build any .NET Core sample app living on GitHub or any other public Git repo.
 
 The script also creates and configures CodeCommit credentials, along with the `aws` Git remote, so that workshop attendee could run "`git push aws`".
 
-These scripts DO NOT ISNTALL SOFTWARE, like Git or Visual Studio, on the EC2 instance (VM). The AMI image used for creating the VM should have all necessary software installed.
+These scripts DO NOT INSTALL SOFTWARE, like Git or Visual Studio, on the EC2 instance (VM). The AMI image used for creating the VM should have all necessary software installed.
 
 ## DISCLAIMER: NO SECURITY AND NO GUARANTEE
 
@@ -31,7 +31,7 @@ Use these scripts for EC2 initialization and cleanup. Both scripts are idempoten
 
 Re-Run the scripts if something didn't work, and create an issue in the [backlog](https://github.com/vgribok/AWS-EC2-Windows-Dev-Init/issues).
 
-Use Windows Task Scheduler to run this script on system startup in Windows user context that has administrator privileges. Use Windows Task Scheduler to disable default AWS initializtion script that runs on system startup. This set of scripts invokes AWS script.
+Use Windows Task Scheduler to run this script on system startup in Windows user context that has administrator privileges. Use Windows Task Scheduler to disable default AWS initialization script that runs on system startup. This set of scripts invokes AWS script.
 
 Use Windows Task Scheduler to run "`C:\Windows\System32\net.exe user Administrator Passw0rd`" every 5 minute to counteract AWS initialization script and ensure that workshop attendees can RDP into the EC2 lab using well-known password.
 
@@ -39,9 +39,9 @@ Use Windows Task Scheduler to run "`C:\Windows\System32\net.exe user Administrat
 
 *Close ALL programs/windows* to ensure files and directories can be deleted, and then run [undo-lab-everything.ps1](./src/undo-scripts/undo-lab-everything.ps1) after the lab. Create a shortcut to the script on the C:\ or in some other well-known and easy to get to location, but not on the desktop so that workshop attendees would not accidentally destroy AWS resources and their dev environment in the middle of the workshop.
 
-The cleanup script will destroy AWS infrastructure created by specified CloudFormation templates, destroy an ECR repo, delete lab user, un-configure AWS credentials on the EC2, and in general will take the system to the state where no AWS CLI, PowreShell or SDK functions can run.
+The cleanup script will destroy AWS infrastructure created by specified CloudFormation templates, destroy an ECR repo, delete lab user, un-configure AWS credentials on the EC2, and in general will take the system to the state where no AWS CLI, PowerShell or SDK functions can run.
 
-# Using EC2 User Data for passing paramters to these scripts baked into an AMI
+# Using EC2 User Data for passing parameters to these scripts baked into an AMI
 
 If your AWS VM (EC2) image, an AMI, has these scripts, their behavior can be driven by supplying a script like this as [EC2 instance user data](https://aws.amazon.com/premiumsupport/knowledge-center/ec2-windows-run-command-new/):
 ```ps1
@@ -68,13 +68,13 @@ All these environment variables are optional. If none are set, the resulting dev
 
 ##### Sample App Parameters
 
-* **UNICORN_LAB_GUIDE_URL** - either an internet URL or a file path to the home page of the workshop instructions/lab guide. If relative file path is used, it should be relative to the sample application location (see below). A desktop shortcut named "Lab Guide" is created pointing to the location provided as a value of this environment variable.
+* **UNICORN_LAB_GUIDE_URL** - either an internet URL or a file path to the home page of the workshop instructions/lab guide. If relative file path is used, it should be relative to the sample application location (see below). A desktop shortcut named "Lab Guide" is created pointing to the location provided as a value of this environment variable. If URI is a file path, the shortcut will be created only if UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL was also set.
 
 * **UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL** - sample application Git repository URL. If specified, this git repo will be `git clone` w/o authentication, into a user directory (~/, %USERPROFILE%). If not specified, no sample app will be cloned.
 
 * **UNICORN_LAB_SAMPLE_APP_GIT_BRANCH** specifies sample application Git branch. If not set, "master" is used. Applies only if UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL was set.
 
-* **UNICORN_LAB_SAMPLE_APP_SOLUTION_DIR** - relative path to a *directory* where sample app's main project or Visual Studio solution file is. If not supplied, main repo direcotry assumed to be the one. Applies only if UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL was set.
+* **UNICORN_LAB_SAMPLE_APP_SOLUTION_DIR** - relative path to a *directory* where sample app's main project or Visual Studio solution file is. If not supplied, main repo directory assumed to be the one. Applies only if UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL was set.
 
 * **UNICORN_LAB_SAMPLE_APP_SOLUTION_FILE** - name of the sample app Visual Studio project or solution file. `dotnet build` will be run for this file. If not specified, `dotnet build` will run against the UNICORN_LAB_SAMPLE_APP_SOLUTION_DIR. The script will not terminate if build has failed. Applies only if UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL was set.
 

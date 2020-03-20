@@ -134,6 +134,11 @@ function InitWorkshop {
         Set-VSCELicenseExpirationDate -Version $vsVersion
     }
 
+    if(IsWebUri $labGuideUrl)
+    {   # If lab guide points to a web location, create desktop shortcut for it regardless whether sample app is used or not.
+        CreateDesktopShortcut "Lab Guide" $labGuideUrl
+    }
+
     if($sampleAppGitHubUrl)
     {
         # Get sample app source from GitHub
@@ -160,7 +165,10 @@ function InitWorkshop {
 
         Set-Location $sampleAppPath
 
-        CreateDesktopShortcut "Lab Guide" $labGuideUrl
+        if(-Not (IsWebUri $labGuideUrl))
+        {
+            CreateDesktopShortcut "Lab Guide" $labGuideUrl
+        }
         CreateDesktopShortcut "Sample App" $solutionPath
 
         # Adding "aws" as a Git remote, pointing to the CodeCommit repo in the current AWS account
