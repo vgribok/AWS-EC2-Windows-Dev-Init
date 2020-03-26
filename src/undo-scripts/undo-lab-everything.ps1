@@ -16,7 +16,7 @@ param(
 
 if(-Not $cleanupConfirmed)
 {
-    Write-Host -NoNewline "Please choose an option:`n`nPress 1 if you need to clean up and plan to either shutdown or reboot the instance afterwards.`nPress 2 for regular cleanup. Enables re-initializing the system by running init scripts manually.`nPress any other key to cancel cleaup.`n`n/1/2/x>"
+    Write-Host -NoNewline "Please choose an option:`n`nPress 1 if you need to clean up and plan to either shutdown or reboot the instance afterwards.`nPress 2 for regular cleanup. Enables re-initializing the system by running init scripts manually.`nClose this window to cancel cleaup.`n`n/1/2/x>"
     $cleanupConfirmed = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown").Character.ToString()
 }
 

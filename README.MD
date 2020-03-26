@@ -47,17 +47,20 @@ If your AWS VM (EC2) image, an AMI, has these scripts, their behavior can be dri
 ```ps1
 <powershell>
 [string[][]] $envVars = @(
-    @( "ARRAY-STARTER", "DO NOT DELETE THIS LINE" ),
-    @( "UNICORN_LAB_LINUX_DOCKER_AMI", "ami-089311111ae951ba" ),
-    @( "UNICORN_LAB_LINUX_DOCKER_START", "true" ),
-    @( "UNICORN_LAB_LINUX_DOCKER_INSTANCE_SIZE", "t3a.small" ),
+#@("UNICORN_LAB_INIT_SCRIPT_BRANCH", "development"),
+@("UNICORN_LAB_GUIDE_URL", "https://github.com/dotnet/dotnet-docker/blob/master/samples/aspnetapp/README.md"),
+@("UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL", "https://github.com/dotnet/dotnet-docker.git"),
+@("UNICORN_LAB_SAMPLE_APP_SOLUTION_FILE", "aspnetapp.sln"),
+@("UNICORN_LAB_SAMPLE_APP_SOLUTION_DIR", "./samples/aspnetapp/"),
+@("UNICORN_LAB_LINUX_DOCKER_START", "true"),
+@("UNICORN_LAB_LINUX_DOCKER_AMI", "ami-000000a000aa00aa") # <= use real Linux AMI for the region
 )
 foreach($pair in $envVars)
 {
-    if($pair -and $pair[0] -and $pair[0] -ne "ARRAY-STARTER")
-    {
-        [System.Environment]::SetEnvironmentVariable($pair[0], $pair[1], [System.EnvironmentVariableTarget]::Machine)
-    }
+    if($pair -and $pair[0] -and $pair[0] -ne "ARRAY-STARTER")
+    {
+        [System.Environment]::SetEnvironmentVariable($pair[0], $pair[1], [System.EnvironmentVariableTarget]::Machine)
+    }
 }
 </powershell>
 ```
