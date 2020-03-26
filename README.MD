@@ -76,8 +76,6 @@ All these environment variables are optional. If none are set, the resulting dev
 
 * **UNICORN_LAB_INIT_SCRIPT_BRANCH** - Git branch name for this repo. If not supplied, "master" is used. This variable is used only by the [bootstrapping script](./src/aws-ec2-lab-dev-box-bootstrap.ps1), to check enable debugging of these scripts w/o fouling up "master" used as production scripts.
 
-* **UNICORN_LAB_ADMIN_PASSWORD** - optional well-known password to be set for the Administrator user and to be given to lab participants. If not set, AWS EC2 "Get Password" feature will need to be used.
-
 ##### Sample App Parameters
 
 * **UNICORN_LAB_GUIDE_URL** - either an internet URL or a file path to the home page of the workshop instructions/lab guide. If relative file path is used, it should be relative to the sample application location (see below). A desktop shortcut named "Lab Guide" is created pointing to the location provided as a value of this environment variable. If URI is a file path, the shortcut will be created only if UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL was also set.
