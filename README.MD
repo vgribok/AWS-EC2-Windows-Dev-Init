@@ -8,7 +8,7 @@ The main functions of the script are:
 
 The script also creates and configures CodeCommit credentials, along with the `aws` Git remote, so that workshop attendee could run "`git push aws`".
 
-These scripts DO NOT INSTALL SOFTWARE, like Git or Visual Studio, on the EC2 instance (VM). The AMI image used for creating the VM should have all necessary software installed.
+These **scripts DO NOT INSTALL SOFTWARE**, like Git or Visual Studio, on the EC2 instance (VM). The AMI image used for creating the VM should have all necessary software installed.
 
 ## DISCLAIMER: NO SECURITY AND NO GUARANTEE
 
@@ -22,24 +22,31 @@ Use at your own risk.
 
 Use these scripts for EC2 initialization and cleanup. Both scripts are idempotent, i.e. one does not have to run "undo" scripts before running "init" scripts, if something didn't work correctly.
 
+### Pre-Requisites
+
+The AMI of the EC2 VM should have following software installed on it:
+* [PowerShell 7](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell-core-on-windows)
+* [Git](https://chocolatey.org/packages/git)
+* [.NET Core SDK](https://chocolatey.org/packages/dotnetcore-sdk)
+* [AWS CLI](https://chocolatey.org/packages/awscli) and [AWS Tools for PowerShell](https://chocolatey.org/packages/AWSTools.Powershell)
+* [Visual Studio 2019 Community edition](https://chocolatey.org/packages/visualstudio2019community)
+* [AWS Toolkit for Visual Studio](https://aws.amazon.com/visualstudio/)
+
 ### EC2 initialization
 
-* Copy [aws-ec2-lab-dev-box-bootstrap.ps1](./src/aws-ec2-lab-dev-box-bootstrap.ps1) file to the destination EC2 instance that has Role with the *AdministratorAccess* IAM policy. The IMA needs to have all prerequisite development tools installed: Visual Studio, SQL Server, PowerShell 7, AWS Toolkit, etc.
-* If your workshop sample app is on GitHub or in another public Git repo, you can modify top part (parameters) of the script to point to your sample app.
-* Run the script before the workshop. It will get latest versions of the rest of the scripts from GitHub. 
-* If you maintain an EC2 instance with .NET development tools for workshop/lab purposes, consider running the initialization part of the script from Windows Task Scheduler, rights after the main AWS EC2 initialization script. Run the script under the "Administrator" user account, if running non-interactively.
+* Copy [aws-ec2-lab-dev-box-bootstrap.ps1](./src/aws-ec2-lab-dev-box-bootstrap.ps1), [initialize-workshop.bat](./src/initialize-workshop.bat) and [cleanup-after-workshop.bat](/src/cleanup-after-workshop.bat) files to the C:\ of the destination EC2 instance that has IAM Role with the *AdministratorAccess* policy. 
 
-Re-Run the scripts if something didn't work, and create an issue in the [backlog](https://github.com/vgribok/AWS-EC2-Windows-Dev-Init/issues).
+* Run the `C:\initialize-workshop.bat` script before the workshop. It will get latest versions of the rest of the scripts from GitHub. 
+* If you maintain an EC2 instance with .NET development tools for workshop/lab purposes, consider running the "C:\initialize-workshop.bat" on system start from Windows Task Scheduler, right after the main AWS EC2 initialization script. Run the script under the "Administrator" user account, if running non-interactively.
 
-Use Windows Task Scheduler to run this script on system startup in Windows user context that has administrator privileges. Use Windows Task Scheduler to disable default AWS initialization script that runs on system startup. This set of scripts invokes AWS script.
+Re-Run the "C:\initialize-workshop.bat" script if something didn't work, and create an issue in the [backlog](https://github.com/vgribok/AWS-EC2-Windows-Dev-Init/issues).
 
-Use Windows Task Scheduler to run "`C:\Windows\System32\net.exe user Administrator Passw0rd`" every 5 minute to counteract AWS initialization script and ensure that workshop attendees can RDP into the EC2 lab using well-known password.
 
 ### EC2 Cleanup
 
-*Close ALL programs/windows* to ensure files and directories can be deleted, and then run [undo-lab-everything.ps1](./src/undo-scripts/undo-lab-everything.ps1) after the lab. Create a shortcut to the script on the C:\ or in some other well-known and easy to get to location, but not on the desktop so that workshop attendees would not accidentally destroy AWS resources and their dev environment in the middle of the workshop.
+*Close ALL programs/windows* to ensure files and directories can be deleted, and then run [c:\cleanup-after-workshop.bat](./src/cleanup-after-workshop.bat) after the lab.
 
-The cleanup script will destroy AWS infrastructure created by specified CloudFormation templates, destroy an ECR repo, delete lab user, un-configure AWS credentials on the EC2, and in general will take the system to the state where no AWS CLI, PowerShell or SDK functions can run.
+The cleanup script will destroy AWS infrastructure created by specified CloudFormation templates, destroy an ECR repo, delete lab user, un-configure AWS credentials on the EC2, and in general will take the system to the state preceding running the initialization script.
 
 # Using EC2 User Data for passing parameters to these scripts baked into an AMI
 
@@ -68,6 +75,8 @@ foreach($pair in $envVars)
 All these environment variables are optional. If none are set, the resulting development system will have all the development tool, except Docker for Linux containers, but no sample application and not desktop shortcuts to the lab guide.
 
 * **UNICORN_LAB_INIT_SCRIPT_BRANCH** - Git branch name for this repo. If not supplied, "master" is used. This variable is used only by the [bootstrapping script](./src/aws-ec2-lab-dev-box-bootstrap.ps1), to check enable debugging of these scripts w/o fouling up "master" used as production scripts.
+
+* **UNICORN_LAB_ADMIN_PASSWORD** - optional well-known password to be set for the Administrator user and to be given to lab participants. If not set, AWS EC2 "Get Password" feature will need to be used.
 
 ##### Sample App Parameters
 

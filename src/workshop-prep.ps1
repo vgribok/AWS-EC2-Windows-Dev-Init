@@ -19,12 +19,12 @@ param(
     [string] $useDockerDamonLinuxEc2, # UNICORN_LAB_LINUX_DOCKER_START env var
     [string] $dockerDaemonLinuxAmi, # UNICORN_LAB_LINUX_DOCKER_AMI env var
     [string] $dockerDaemonLinuxInstanceSize, # UNICORN_LAB_LINUX_DOCKER_INSTANCE_SIZE env var
+    [string] $systemSecretWord, # UNICORN_LAB_ADMIN_PASSWORD
 
     # This group of parameters are likely to stay unchanged from one lab to another
     [string] $workDirectory = "~/AWS-workshop-assets",
     [bool] $isDebug = $false,
     [string] $systemUserName = $null, # current/context user name will be used
-    [string] $systemSecretWord = "Passw0rd",
     [string] $vsLicenseScriptGitHubUrl = "https://github.com/vgribok/VSCELicense.git",
     [string] $vsVersion = "VS2019",
     [string] $tempIamUserPrefix = "temp-aws-lab-user",
@@ -90,9 +90,13 @@ function InitWorkshop {
     $useDockerDamonLinuxEc2 = CoalesceWithEnvVar $useDockerDamonLinuxEc2 "UNICORN_LAB_LINUX_DOCKER_START" $null # Set to "true" to start remote Docker daemon instance
     $dockerDaemonLinuxAmi = CoalesceWithEnvVar $dockerDaemonLinuxAmi "UNICORN_LAB_LINUX_DOCKER_AMI" # Example: "ami-XXXXXXXXXXXX"
     $dockerDaemonLinuxInstanceSize = CoalesceWithEnvVar $dockerDaemonLinuxInstanceSize "UNICORN_LAB_LINUX_DOCKER_INSTANCE_SIZE" "t3a.small"
+    $systemSecretWord = CoalesceWithEnvVar $systemSecretWord "UNICORN_LAB_ADMIN_PASSWORD"
     
-    # Reset user password to counteract AWS initialization scrips
-    SetLocalUserPassword -username $systemUserName -password $systemSecretWord -isDebug $isDebug
+    if($systemSecretWord)
+    {
+        # Reset user password to counteract AWS initialization scrips
+        SetLocalUserPassword -username $systemUserName -password $systemSecretWord -isDebug $isDebug
+    }
 
     $awsRegion = Coalesce $awsRegion (GetDefaultAwsRegionName)
     Write-Information "Current AWS region is `"$awsRegion`""
