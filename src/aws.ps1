@@ -107,55 +107,31 @@ function ConfigureCurrentAwsRegion {
         $awsRegion = GetDefaultAwsRegionName
     }
 
-    aws configure set region $awsRegion --profile $profileName | Out-Host
-    Initialize-AWSDefaultConfiguration -ProfileName $profileName -Region $awsRegion
+    aws configure set region $awsRegion | Out-Host
+    if($profileName)
+    {
+        Initialize-AWSDefaultConfiguration -ProfileName $profileName -Region $awsRegion
+    }else 
+    {
+        Initialize-AWSDefaultConfiguration -Region $awsRegion
+    }
 
     Write-Information "Set current AWS region to `"$awsRegion`""
-}
-
-function EnsureIniCategory {
-    param (
-        [Parameter(mandatory=$true)] [string] $iniFilePath,
-        [Parameter(mandatory=$true)] [string] $iniCategory
-    )
-
-    [string] $lineBreak = [System.Environment]::NewLine
-    
-    [string] $iniFileContent = Get-Content $iniFilePath | Out-String
-    [string] $categoryLine = "[$iniCategory]$lineBreak"
-    if(-Not $iniFileContent.Contains($categoryLine))
-    {
-        Add-Content -Path $iniFilePath -Value "$lineBreak$lineBreak$categoryLine"
-    }
-}
-
-function EnsureAwsCliProfile {
-    param ([Parameter(mandatory=$true)] [string] $profileName)
-    
-    EnsureIniCategory "~/.aws/credentials" $profileName
-
-    [string] $configProfileName = ($profileName -eq "default") ? $profileName : "profile $profileName"
-    EnsureIniCategory "~/.aws/config" $configProfileName
 }
 
 function ConfigureIamUserCredentialsOnTheSystem {
     param (
         [Parameter(mandatory=$true)] $accessKeyInfo,
-        [string] $awsRegion,
-        [string] $profileName = "default"
+        [string] $awsRegion
     )
 
     # Store credentials for AWS SDK and VS Toolkit
-    Set-AWSCredentials -AccessKey $accessKeyInfo.AccessKeyId -SecretKey $accessKeyInfo.SecretAccessKey -StoreAs $profileName
-    Set-AWSCredentials -StoredCredentials $profileName
-    Set-Variable -Name StoredAWSCredentials -Value $StoredAWSCredentials -Scope Global -Option None -Visibility Public # a work-around for the AWS PS Toolkit bug https://forums.aws.amazon.com/thread.jspa?threadID=259761
-    Set-AWSCredential -ProfileName $profileName
+    Set-AWSCredential -AccessKey $accessKeyInfo.AccessKeyId -SecretKey $accessKeyInfo.SecretAccessKey -StoreAs default
     Write-Information "Set user `"$($awsAccessKeyInfo.UserName)`" (AccessKey `"$($accessKeyInfo.AccessKeyId)`") as current for AWS SDK and Visual Studio Toolkit"
-    ConfigureCurrentAwsRegion $awsRegion $profileName
 
-    # Store credentials for aws CLI, in ~/.aws "credentials" and "config" files
-    #EnsureAwsCliProfile $profileName # aws CLI profile must exist before trying to change it
-    $env:AWS_PROFILE=$profileName 
+    ConfigureCurrentAwsRegion($awsRegion)
+
+    # Store credentials in ~/.aws "credentials" and "config" files
     aws configure set aws_access_key_id $accessKeyInfo.AccessKeyId | Out-Host
     aws configure set aws_secret_access_key $accessKeyInfo.SecretAccessKey | Out-Host
     aws configure set output json | Out-Host
