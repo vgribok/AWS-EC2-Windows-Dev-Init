@@ -97,11 +97,11 @@ function prompt
 {
     $savedLASTEXITCODE = $LASTEXITCODE
 
-    $prompt = "PS "
+    $prompt = "PS"
 	$needsAt = $false
     if ($null -ne $StoredAWSRegion) 
     { 
-        $prompt += "$StoredAWSRegion" 
+        $prompt += " $StoredAWSRegion" 
 		$needsAt = $true
     }
     if ($null -ne $StoredAWSCredentials)
