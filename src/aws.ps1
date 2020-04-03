@@ -315,6 +315,7 @@ function StartLinuxDockerDaemonInstance {
     $tagSpec = CreateEc2Tag -tagName "Name" -tagValue $linuxInstanceName
 
     $startedInstances = New-EC2Instance `
+        -AssociatePublicIp $true `
         -ImageId $linuxAmiId `
         -SubnetId $subnetId `
         -InstanceType $instanceType `

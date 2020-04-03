@@ -74,7 +74,7 @@ foreach($pair in $envVars)
 #### Environment Variables as Parameters
 All these environment variables are optional. If none are set, the resulting development system will have all the development tool, except Docker for Linux containers, but no sample application and not desktop shortcuts to the lab guide.
 
-* **UNICORN_LAB_INIT_SCRIPT_BRANCH** - Git branch name for this repo. If not supplied, "master" is used. This variable is used only by the [bootstrapping script](./src/aws-ec2-lab-dev-box-bootstrap.ps1), to check enable debugging of these scripts w/o fouling up "master" used as production scripts.
+* **UNICORN_LAB_INIT_SCRIPT_BRANCH** - Git branch name for this repo. If not supplied, "master" is used. This variable is used only by the [bootstrapping script](./src/aws-ec2-lab-dev-box-bootstrap.ps1), to enable debugging of these scripts w/o fouling up "master" used as production scripts.
 
 ##### Sample App Parameters
 
