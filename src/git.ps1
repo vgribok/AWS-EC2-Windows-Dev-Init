@@ -24,8 +24,24 @@ function GitCloneAndCheckout {
     
     Push-Location
     Set-Location $projectDirectoryName
-    git checkout $gitBranchName | Out-Host
-    git pull | Out-Host
+
+    [string ]$tagBranchName = $null
+    [string] $gitTagPrefix = "tags/"
+    
+    if($gitBranchName.StartsWith($gitTagPrefix)) {
+        $tagBranchName = "Tag_$($gitBranchName.Substring($gitTagPrefix.Length))"
+        $tagBranchExists = git show-ref refs/heads/$tagBranchName
+        if($tagBranchExists) {
+            $gitBranchName = $tagBranchName
+            git checkout $gitBranchName | Out-Host
+        }else {
+            git checkout -b $tagBranchName $gitBranchName  | Out-Host
+        }
+    }else {
+        git checkout $gitBranchName | Out-Host
+        git pull  | Out-Host
+    }
+    
     Pop-Location
 
     Write-Information "Cloned `"$remoteGitUrl`" Git repo to `"$projectDirectoryName`" directory and checked out & pulled `"$gitBranchName`" branch" 

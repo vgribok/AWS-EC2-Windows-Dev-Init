@@ -48,26 +48,38 @@ if ($bootstrapDebug)
     $dockerDaemonLinuxInstanceSize = "t3a.small"
 }else
 {   
-    if(-Not $scriptBranchName)
-    {
+    if(-Not $scriptBranchName) {
         $scriptBranchName = $env:UNICORN_LAB_INIT_SCRIPT_BRANCH
 
-        if(-Not $scriptBranchName)
-        {
+        if(-Not $scriptBranchName) {
             $scriptBranchName = "master"
         }
     }
 
-    Write-Information "Getting init scripts from `"$scriptGitRepoUrl`", branch `"$scriptBranchName`""
-
+    Write-Information "Getting init scripts from `"$scriptGitRepoUrl`", branch/tag `"$scriptBranchName`""
     # Get init scripts from GitHub
     Set-Location "~"
     git clone $scriptGitRepoUrl $scriptDirectoryName | Out-Host
     Write-Information "Cloned `"$scriptGitRepoUrl`" remote Git repository to `"~/$scriptDirectoryName`" directory"
 
     Set-Location $scriptDirectoryName
-    git checkout $scriptBranchName
-    git pull
+
+    [string ]$tagBranchName = $null
+    [string] $gitTagPrefix = "tags/"
+    
+    if($scriptBranchName.StartsWith($gitTagPrefix)) {
+        $tagBranchName = "Tag_$($scriptBranchName.Substring($gitTagPrefix.Length))"
+        $tagBranchExists = git show-ref refs/heads/$tagBranchName
+        if($tagBranchExists) {
+            $scriptBranchName = $tagBranchName
+            git checkout $scriptBranchName | Out-Host
+        }else {
+            git checkout -b $tagBranchName $scriptBranchName  | Out-Host
+        }
+    }else {
+        git checkout $scriptBranchName | Out-Host
+        git pull  | Out-Host
+    }
     Write-Information "Checked out and pulled `"$scriptBranchName`" branch"
     Set-Location $scriptSourceDirectory
 }
