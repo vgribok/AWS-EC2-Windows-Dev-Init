@@ -5,46 +5,6 @@ Enables several high-level operating system and file system functions.
 
 Write-Information "sys.ps1 script has loaded"
 
-function setWindowsUserPassword {
-    param (
-        [string] $username,
-        [Parameter(mandatory=$true)] [securestring] $password
-    )
-
-    if(-Not $username)
-    {
-        $username = $env:USERNAME
-    }
-    
-    Write-Information "Setting password for Windows user `"$username`""
-
-    [System.Boolean] $savedWhatIf = $WhatIfPreference
-    try {
-        $WhatIfPreference = $isDebug
-        Set-LocalUser -Name $username -Password $password
-        Write-Information "Updated password for Windows user `"$username`""
-    }
-    finally
-    {
-        $WhatIfPreference = $savedWhatIf
-    }
-}
-
-function SetLocalUserPassword {
-    param (
-        [string] $username = $null,
-        [string] $secretword = "Passw0rd",
-        [string] $isDebug = $false
-    )
-    
-    [Security.SecureString] $securePassword = ConvertTo-SecureString $secretword -AsPlainText -Force
-        
-    if($IsWindows)
-    {
-        setWindowsUserPassword -username $username -password $securePassword
-    }
-}
-
 function CleanupRetVal {
     param (
         $retVal
