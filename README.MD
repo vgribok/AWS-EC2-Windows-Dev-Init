@@ -74,7 +74,7 @@ foreach($pair in $envVars)
 #### Environment Variables as Parameters
 All these environment variables are optional. If none are set, the resulting development system will have all the development tool, except Docker for Linux containers, but no sample application and not desktop shortcuts to the lab guide.
 
-* **UNICORN_LAB_INIT_SCRIPT_BRANCH** - Git branch name for this repo. If not supplied, "master" is used. This variable is used only by the [bootstrapping script](./src/aws-ec2-lab-dev-box-bootstrap.ps1), to enable debugging of these scripts w/o fouling up "master" used as production scripts.
+* **UNICORN_LAB_INIT_SCRIPT_BRANCH** - Git branch or, better, tag (with "tags/" prefix) name to checkout from this repo when the bootstrapper scripts runs. If not supplied, "master" branch is used, which is not a good idea as branches mutate while tags do not. Using tags is better practice as that creates an immutable envrionment. This variable is used only by the [bootstrapping script](./src/aws-ec2-lab-dev-box-bootstrap.ps1), to enable debugging of these scripts as well as to support creation of immutable environments.
 
 ##### Sample App Parameters
 
@@ -82,7 +82,7 @@ All these environment variables are optional. If none are set, the resulting dev
 
 * **UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL** - sample application Git repository URL. If specified, this git repo will be `git clone` w/o authentication, into a user directory (~/, %USERPROFILE%). If not specified, no sample app will be cloned.
 
-* **UNICORN_LAB_SAMPLE_APP_GIT_BRANCH** specifies sample application Git branch. If not set, "master" is used. Applies only if UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL was set.
+* **UNICORN_LAB_SAMPLE_APP_GIT_BRANCH** - specifies sample application Git branch or tag (with "tags/" prefix). If not set, "master" branch is used. Using tags is a better practice as this creates an immutable environment unaffected by mutating heads of branches. Applies only if UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL was set.
 
 * **UNICORN_LAB_SAMPLE_APP_SOLUTION_DIR** - relative path to a *directory* where sample app's main project or Visual Studio solution file is. If not supplied, main repo directory assumed to be the one. Applies only if UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL was set.
 
