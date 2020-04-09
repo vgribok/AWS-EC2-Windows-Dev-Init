@@ -15,7 +15,7 @@ param(
     [string] $sampleAppSolutionFileDir,
     [string] $sampleAppSolutionFileName,
     [string] $sampleAppBuildConfiguration,
-    [string] $cdkProjectDirPath, # put $null here to skip "cdk bootstrap" in the main script
+    [string] $bootstrapCdk, # UNICORN_LAB_BOOTSTRAP_CDK env var
     [string] $codeCommitRepoName,
     [string] $useDockerDamonLinuxEc2 = $null, # UNICORN_LAB_LINUX_DOCKER_START env var
     [string] $dockerDaemonLinuxAmi = $null, # UNICORN_LAB_LINUX_DOCKER_AMI env var
@@ -41,7 +41,7 @@ if ($bootstrapDebug)
     $sampleAppSolutionFileDir = "."
     $sampleAppSolutionFileName = "UnicornStore.sln"
     $sampleAppBuildConfiguration = "DebugPostgres"
-    $cdkProjectDirPath = "./infra-as-code/CicdInfraAsCode/src" # put $null here to skip "cdk bootstrap" in the main script
+    $bootstrapCdk = "yes"
     $codeCommitRepoName = "Unicorn-Store-Sample-Git-Repo"
     $useDockerDamonLinuxEc2 = $false
     $dockerDaemonLinuxAmi = $null
@@ -91,7 +91,7 @@ Write-Information "Invoking main workshop initialization script"
     -isDebug $bootstrapDebug `
     -sampleAppGitHubUrl $sampleAppGitHubUrl -sampleAppGitBranchName $sampleAppGitBranchName `
     -sampleAppSolutionFileDir $sampleAppSolutionFileDir -sampleAppSolutionFileName $sampleAppSolutionFileName -sampleAppBuildConfiguration $sampleAppBuildConfiguration `
-    -cdkProjectDirPath $cdkProjectDirPath `
+    -bootstrapCdk $bootstrapCdk `
     -codeCommitRepoName $codeCommitRepoName `
     -useDockerDamonLinuxEc2 $useDockerDamonLinuxEc2 -dockerDaemonLinuxAmi $dockerDaemonLinuxAmi -dockerDaemonLinuxInstanceSize $dockerDaemonLinuxInstanceSize
 

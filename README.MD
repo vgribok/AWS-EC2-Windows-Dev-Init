@@ -76,6 +76,8 @@ All these environment variables are optional. If none are set, the resulting dev
 
 * **UNICORN_LAB_INIT_SCRIPT_BRANCH** - Git branch or, better, tag (with "tags/" prefix) name to checkout from this repo when the bootstrapper scripts runs. If not supplied, "master" branch is used, which is not a good idea as branches mutate while tags do not. Using tags is better practice as that creates an immutable envrionment. This variable is used only by the [bootstrapping script](./src/aws-ec2-lab-dev-box-bootstrap.ps1), to enable debugging of these scripts as well as to support creation of immutable environments.
 
+* **UNICORN_LAB_BOOTSTRAP_CDK** - If not blank, will run "`cdk bootstrap`" for current AWS environment, which is a combination of AWS account number and AWS Region.
+
 ##### Sample App Parameters
 
 * **UNICORN_LAB_GUIDE_URL** - either an internet URL or a file path to the home page of the workshop instructions/lab guide. If relative file path is used, it should be relative to the sample application location (see below). A desktop shortcut named "Lab Guide" is created pointing to the location provided as a value of this environment variable. If URI is a file path, the shortcut will be created only if UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL was also set.
@@ -89,8 +91,6 @@ All these environment variables are optional. If none are set, the resulting dev
 * **UNICORN_LAB_SAMPLE_APP_SOLUTION_FILE** - name of the sample app Visual Studio project or solution file. `dotnet build` will be run for this file. If not specified, `dotnet build` will run against the UNICORN_LAB_SAMPLE_APP_SOLUTION_DIR. The script will not terminate if build has failed. Applies only if UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL was set.
 
 * **UNICORN_LAB_SAMPLE_APP_BUILD_CONFIG** - sample app's build configuration, Like Release or Debug. If not specified *Debug* is used. Applies only if UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL was set.
-
-* **UNICORN_LAB_SAMPLE_APP_CDK_PROJ_DIR** - relative path to any AWS .NET CDK project in the sample application solution. It serves as an indicator that CDK will be used and to run `cdk bootstrap`, which reqruies a CDK project even though it's not project-specific. If not supplied, `cdk bootstrap` command will not run for AWS Region where the EC2 is running. Applies only if UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL was set.
 
 * **UNICORN_LAB_SAMPLE_APP_CODECOMMIT_REPO_NAME** - configures "aws" git remote for sample app, pointing to an AWS CodeCommit repo of the specified name in the region where the system runs. If not specified, "Unicorn-Store-Sample-Git-Repo" is used. Applies only if UNICORN_LAB_SAMPLE_APP_GIT_REPO_URL was set.
 
