@@ -20,15 +20,7 @@ DeleteCfnStacks($workshopCfnStacks)
 
 # Delete ECR repo because non-empty repos won't be deleted by CFN templates that created them
 [string] $ecrRepoNames = CoalesceWithEnvVar $ecrRepoName "UNICORN_LAB_AWS_RIP_ECR"
-if($ecrRepoNames)
-{
-    foreach($repoName in $ecrRepoNames.Split(",")) {
-        if($repoName) {
-            Remove-ECRRepository -RepositoryName $ecrRepoName -IgnoreExistingImages $true -Force -ErrorAction SilentlyContinue
-            Write-Information "Removed ECR repository `"$ecrRepoName`""
-        }
-    }
-}
+DeleteEcrRepos($ecrRepoNames)
 
 TerminateInstanceByName(MakeLinuxInstanceName)
 SetDockerHostUserEnvVar # Removes "DOCKER_HOST" env var
