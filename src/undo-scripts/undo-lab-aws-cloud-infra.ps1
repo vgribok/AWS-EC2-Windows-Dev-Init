@@ -16,19 +16,18 @@ ConfigureCurrentAwsRegion -profileName $null
 
 # Delete CFN stacks created in the course of the lab
 $workshopCfnStacks = CoalesceWithEnvVar $workshopCfnStacks "UNICORN_LAB_AWS_RIP_CFNS"
-if($workshopCfnStacks)
-{
-    [string[]] $cfnStacksToDelete = $workshopCfnStacks.Split(",")
-
-    DeleteCfnStacks($cfnStacksToDelete)
-}
+DeleteCfnStacks($workshopCfnStacks)
 
 # Delete ECR repo because non-empty repos won't be deleted by CFN templates that created them
-$ecrRepoName = CoalesceWithEnvVar $ecrRepoName "UNICORN_LAB_AWS_RIP_ECR"
-if($ecrRepoName)
+[string] $ecrRepoNames = CoalesceWithEnvVar $ecrRepoName "UNICORN_LAB_AWS_RIP_ECR"
+if($ecrRepoNames)
 {
-    Remove-ECRRepository -RepositoryName $ecrRepoName -IgnoreExistingImages $true -Force -ErrorAction SilentlyContinue
-    Write-Information "Removed ECR repository `"$ecrRepoName`""
+    foreach($repoName in $ecrRepoNames.Split(",")) {
+        if($repoName) {
+            Remove-ECRRepository -RepositoryName $ecrRepoName -IgnoreExistingImages $true -Force -ErrorAction SilentlyContinue
+            Write-Information "Removed ECR repository `"$ecrRepoName`""
+        }
+    }
 }
 
 TerminateInstanceByName(MakeLinuxInstanceName)

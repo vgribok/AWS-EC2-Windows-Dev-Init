@@ -1,6 +1,10 @@
 Import-Module Pester
 
+$scriptLocation = [System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Path)
+Push-Location
+Set-Location $scriptLocation
 . ../src/sys.ps1
+Pop-Location
 
 Describe "CoalesceWithEnvVar test" {
     It "Must return null if first param is null" {

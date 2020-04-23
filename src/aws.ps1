@@ -150,13 +150,22 @@ function DeleteCfnStack {
     }
 }
 
-function DeleteCfnStacks {
-    param (
-        [Parameter(mandatory=$true)] [string[]] $cfnStackNames
-    )
+function EnsureStringArray {
+    param ($items)
     
-    foreach($cfnStackName in $cfnStackNames)
-    {
+    if(-Not $items) {
+        return @()
+    }
+    $items = ($items -and ($items -is [string])) ? $items.Split(",") : $items
+    return $items | Where-Object { $_ } | ForEach-Object { $_.ToString().Trim() }
+}
+
+function DeleteCfnStacks {
+    param ($cfnStackNames)
+    
+    $cfnStackNames = EnsureStringArray($cfnStackNames)
+
+    foreach($cfnStackName in $cfnStackNames) {
         DeleteCfnStack($cfnStackName)
     }
 }
@@ -385,6 +394,30 @@ function TerminateInstanceByName {
     }
 }
 
+function DeleteEcrRepo {
+    param (
+        [Parameter(mandatory=$true)] [string] $ecrRepoName
+    )
+    
+    if($ecrRepoName) {
+        try {
+            Remove-ECRRepository -RepositoryName $ecrRepoName -IgnoreExistingImages $true -Force -ErrorAction SilentlyContinue
+            Write-Information "Removed ECR repository `"$ecrRepoName`""
+        }catch {
+            Write-Warning "ECR Repository `"$ecrRepoName`" was not deleted due to `"$PSItem`""
+        }
+    }
+}
+
+function DeleteEcrRepos {
+    param ($ecrRepos)
+    
+    $ecrRepos = EnsureStringArray($ecrRepos)
+
+    foreach($ecrRepo in $ecrRepos) {
+        DeleteEcrRepo($ecrRepo)
+    }
+}
 
 #$hkw = TerminateInstanceByName(MakeLinuxInstanceName)
 #SetDockerHostUserEnvVar
