@@ -26,11 +26,16 @@ Describe "RIP related tests" {
         EnsureStringArray(" one,two , three ") | Should be @("one", "two", "three")
     }
 
+    It "Must not puke when attempting to delete single non-existing ECR repos" {
+        $result = DeleteEcrRepos("bogus-repo")
+    }
     It "Must not puke when attempting to delete multiple non-existing ECR repos" {
         $result = DeleteEcrRepos("bogus-repo-1, bougs-repo-2")
     }
-
     It "Must not puke when attempting to delete multiple non-existing CFN stacks" {
         DeleteCfnStacks("bogus-stack-1, bougs-stack-2")
     }
+    It "Must not puke when attempting to delete a single non-existing CFN stacks" {
+        DeleteCfnStacks("bogus-stack")
+    }    
 }

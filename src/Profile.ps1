@@ -8,6 +8,14 @@ Write-Host "Initializing PowerShell profile. It may take a few seconds.."
 $InformationPreference = "Continue"
 Import-Module awspowershell.netcore
 
+function Get-VarValue {
+    param (
+        [Parameter(mandatory=$true)] [string] $variableName
+    )
+    
+    return $variableName ? (Get-Variable $variableName -ErrorAction SilentlyContinue).Value : $null
+}
+
 class AwsContext 
 {
     [string] $AccountId
@@ -24,21 +32,28 @@ class AwsContext
 
     [void] SetCurrentRegion() {}
     [void] SetCurrentProfile() {}
+
+    static [string] GetInstanceRegion() {
+        return (Get-EC2InstanceMetadata -category Region).SystemName
+    }
 }
 
 class SdkContext : AwsContext 
 {
     SdkContext([string] $OptioinalProfileName) : base($OptioinalProfileName) 
     {
-        [string] $currentProfile = [SdkContext]::GetCurrentPorfile()
+        [string] $currentProfile = [SdkContext]::GetCurrentProfile()
         $this.WasCurrent = $currentProfile -eq $this.Profile
         $this.Region = [SdkContext]::GetCurrentRegion()
 
+        $credentials = $null
+
         if($this.WasCurrent) {
             $this.AccountId = (Get-STSCallerIdentity).Account
-            $credentials = (Get-AWSCredential).GetCredentials()
-        }elseif (ProfileExists($currentProfile)) {
-                $credentials = (Get-AWSCredential -ProfileName $currentProfile).GetCredentials()
+            $credObj = Get-AWSCredential
+            $credentials = $credObj ? $credObj.GetCredentials() : $null
+        }elseif ([SdkContext]::ProfileExists($currentProfile)) {
+            $credentials = (Get-AWSCredential -ProfileName $currentProfile).GetCredentials()
         }
 
         if($credentials) {
@@ -48,37 +63,43 @@ class SdkContext : AwsContext
     }
 
     static [string] GetCurrentProfile() {
-        return $StoredAWSCredentials ? $StoredAWSCredentials : "default"
+        return Get-VarValue "StoredAWSCredentials"
     }
 
     static [string] GetCurrentRegion() {
-        return Get-DefaultAWSRegion
+        return (Get-DefaultAWSRegion).Region
     }
 
     static [bool] ProfileExists([string] $profile) {
         return (Get-AWSCredential -ListProfileDetail | Where-Object {$_.ProfileName -eq $profile}).Count -gt 0
     }
 
-    static [void] SetCurrentRegion([string] $region) 
+    static [void] SetRegion([string] $region) 
     {
         Set-DefaultAWSRegion $region -Scope Global
-        Set-Variable -Name StoredAWSRegion -Value $StoredAWSRegion -Scope Global -Option None -Visibility Public # a work-around for the AWS PS Toolkit bug https://forums.aws.amazon.com/thread.jspa?threadID=259761
+        [string] $sdkRegion = Get-VarValue "StoredAWSRegion"
+        Set-Variable -Name StoredAWSRegion -Value $sdkRegion -Scope Global -Option None -Visibility Public # a work-around for the AWS PS Toolkit bug https://forums.aws.amazon.com/thread.jspa?threadID=259761
     }
 
-    static [void] SetCurrentProfile([string] $profileName, [bool] $setEverywhere = $true) 
+    static [void] SetProfile([string] $profileName) {
+        [SdkContext]::SetProfile($profileName, $true)
+    }
+
+    static [void] SetProfile([string] $profileName, [bool] $setEverywhere) 
     {
         Set-AWSCredential -ProfileName $profileName # Sets surrent SDK/PS profile
-        Set-Variable -Name StoredAWSCredentials -Value $StoredAWSCredentials -Scope Global -Option None -Visibility Public # a work-around for the AWS PS Toolkit bug https://forums.aws.amazon.com/thread.jspa?threadID=259761
+        [string] $sdkProfile = Get-VarValue "StoredAWSCredentials"
+        Set-Variable -Name StoredAWSCredentials -Value $sdkProfile -Scope Global -Option None -Visibility Public # a work-around for the AWS PS Toolkit bug https://forums.aws.amazon.com/thread.jspa?threadID=259761
     }
 
     [void] SetCurrentRegion() 
     {
-        [SdkContext]::SetCurrentRegion($this.Region)
+        [SdkContext]::SetRegion($this.Region)
     }
 
     [void] SetCurrentProfile() 
     {
-        [SdkContext]::SetCurrentProfile($this.Profile)
+        [SdkContext]::SetProfile($this.Profile)
     }
 
     [void] SaveCredentialsAs([string] $profile) 
@@ -102,7 +123,7 @@ class CliContext : AwsContext {
             $this.SecretKey = aws configure get aws_secret_access_key
             $this.Region = [CliContext]::GetCurrentRegion()
         } else {
-            if(ProfileExists($OptioinalProfileName)) {
+            if([CliContext]::ProfileExists($OptioinalProfileName)) {
                 $this.AccessKey = aws configure get aws_access_key_id --profile $this.Profile
                 $this.SecretKey = aws configure get aws_secret_access_key --profile $this.Profile
                 $this.Region = aws configure get region --profile $this.Profile
@@ -115,11 +136,11 @@ class CliContext : AwsContext {
     }
 
     static [string] GetCurrentProfile() {
-        return $env:AWS_PROFILE ? $env:AWS_PROFILE : "default"
+        return $env:AWS_PROFILE
     }
 
     static [bool] ProfileExists([string] $profile) {
-        return (aws configure list --profile $OptioinalProfileName).Count -gt 3
+        return (aws configure list --profile $profile).Count -gt 3
     }
 
     static [string] GetCurrentAccountId() 
@@ -127,7 +148,11 @@ class CliContext : AwsContext {
         return (aws sts get-caller-identity | ConvertFrom-Json).Account
     }
 
-    static [void] SetCurrentProfile([string] $profileName, [bool] $setEverywhere = $true) 
+    static [void] SetProfile([string] $profileName) {
+        [CliContext]::SetProfile($profileName, $true) 
+    }
+
+    static [void] SetProfile([string] $profileName, [bool] $setEverywhere) 
     {
         $profileName = ($profileName -eq "default") ? "" : $profileName
 
@@ -137,7 +162,7 @@ class CliContext : AwsContext {
         }
     }
 
-    static [void] SetCurrentRegion([string] $region) 
+    static [void] SetRegion([string] $region) 
     {
         if(-Not $region) { return }
         aws configure set region $region | Out-Host
@@ -145,12 +170,12 @@ class CliContext : AwsContext {
 
     [void] SetCurrentRegion() 
     {
-        [CliContext]::SetCurrentRegion($this.Region)
+        [CliContext]::SetRegion($this.Region)
     }
 
     [void] SetCurrentProfile() 
     {
-        [CliContext]::SetCurrentProfile($this.Profile)
+        [CliContext]::SetProfile($this.Profile)
     }
 }
 
@@ -164,28 +189,69 @@ function Get-SdkContext([string] $optioinalProfileName)
     return [SdkContext]::new($optioinalProfileName)
 }
 
-function SyncCurrentCliAndSdkContexts() {
-    [string] $sdkProfile = [SdkContext]::GetCurrentProfile()
+function Set-AWSRegion {
+    param ([Parameter(mandatory=$true)] [string] $region)
+
+    [SdkContext]::SetRegion($region)
+    [CliContext]::SetRegion($region)
+}
+
+function Set-AWSProfile {
+    param ([Parameter(mandatory=$true)] [string] $profileName)
+
     [string] $sdkRegion = [SdkContext]::GetCurrentRegion()
 
-    if([CliContext]::ProfileExists($sdkProfile)) {
-        $currentProfile = $sdkProfile
-        [CliContext]::SetCurrentProfile($sdkProfile)
-    }else {
-        [string] $cliProfile = [CliContext]::GetCurrentProfile()
-        $currentProfile = $cliProfile
-        [SdkContext]::SetCurrentProfile($sdkProfile)
+    [string]$currentProfile
+
+    # Set current credentials profile
+    if([CliContext]::ProfileExists($profileName)) {
+        $currentProfile = $profileName
+        [CliContext]::SetProfile($profileName) # Note, this may change current Region as with AWS CLI, region is part of the profile, while with AWS PS, it is not.
     }
 
+    if([SdkContext]::ProfileExists($profileName)) {
+        [SdkContext]::SetProfile($profileName)
+        if(-Not $currentProfile) {
+            $currentProfile = $profileName
+        }
+    }
+
+    # Set current region
     if($sdkRegion) {
-        [CliContext]::SetCurrentRegion($sdkRegion)
+        [CliContext]::SetRegion($sdkRegion)
     }else {
         $cliRegion = [CliContext]::GetCurrentRegion()
         if($cliRegion) {
-            [SdkContext]::SetCurrentRegion($cliRegion)
+            [SdkContext]::SetRegion($cliRegion)
+        }else {
+            $instanceRegion = (Get-EC2InstanceMetadata -category Region).SystemName
+            if($instanceRegion) {
+                Set-AWSRegion $instanceRegion
+            }
         }
     }
 }
+
+function Get-AWSProfile {
+    [string] $sdkProfile = [SdkContext]::GetCurrentProfile()
+    if($sdkProfile) {
+        return $sdkProfile
+    }
+
+    [string] $cliProfile = [CliContext]::GetCurrentProfile()
+    if($cliProfile) {
+        return $cliProfile
+    }
+
+    return "default"
+}
+
+function Sync-CurrentCliAndSdkContexts() {
+    [string] $sdkProfile = Get-AWSProfile
+    Set-AWSProfile $sdkProfile
+}
+
+Sync-CurrentCliAndSdkContexts
 
 # Write-Information "CLI Context"
 # Get-CliContext
@@ -197,92 +263,6 @@ function SyncCurrentCliAndSdkContexts() {
 # Get-CliContext "bogus"
 # Write-Information "------------------------------"
 
-function Set-AWSRegion {
-    param ([string] $Name = "us-east-1")
-
-    aws configure set region $Name | Out-Host
-
-	Initialize-AWSDefaultConfiguration -Region $Name
-    Set-DefaultAWSRegion $Name -Scope Global
-    Set-Variable -Name StoredAWSRegion -Value $StoredAWSRegion -Scope Global -Option None -Visibility Public # a work-around for the AWS PS Toolkit bug https://forums.aws.amazon.com/thread.jspa?threadID=259761
-}
-
-function Set-AWSProfile {
-    param([string] $Name="default", [string] $Persist="true", [string] $defaultRegion = "us-east-2")
-
-    [bool] $isDefaultProfile = $Name -eq "default"
-    [bool] $awsCliProfileExists = (aws configure list --profile $Name).Count -gt 3
-
-    $sdkCred = Get-AWSCredential $Name
-    [bool] $sdkProfileExists = $false
-    if($sdkCred) {
-        $sdkCred = $sdkCred.GetCredentials()
-        $sdkProfileExists = $true
-    }
-
-    if((-Not $awsCliProfileExists) -And (-Not $sdkProfileExists) -And (-Not $isDefaultProfile)) {
-        Write-Warning "Profile `"$Name`" does not exist"
-        return
-    }
-
-    if($awsCliProfileExists) {
-        [string] $cliAccessKey = aws configure get aws_access_key_id --profile $Name
-        if($cliAccessKey) {
-            if((-not $sdkProfileExists) -or ($cliAccessKey -ne $sdkCred.AccessKey)) {
-                [string] $cliSecret = aws configure get aws_secret_access_key --profile $Name
-                if($cliSecret) {
-                    Set-AWSCredential -AccessKey $cliAccessKey -SecretKey $cliSecret -StoreAs $Name
-                    $sdkProfileExists = $true
-                }
-            }
-        }
-    }
-    
-    [string] $sdkRegion = ""
-
-    if($sdkProfileExists) {
-        Set-AWSCredential -ProfileName $Name # Sets surrent SDK/PS profile
-        Set-AWSCredential -StoredCredentials $Name
-        Set-Variable -Name StoredAWSCredentials -Value $StoredAWSCredentials -Scope Global -Option None -Visibility Public # a work-around for the AWS PS Toolkit bug https://forums.aws.amazon.com/thread.jspa?threadID=259761
-
-        $sdkRegion = Get-DefaultAWSRegion
-    }
-    
-    [string] $cliRegion = aws configure get region --profile $Name
-
-    if((-Not $cliRegion) -And (-Not $sdkRegion)) {
-        $cliRegion = $defaultRegion
-        aws configure set region $cliRegion --profile $Name | Out-Host
-    }
-
-    if($cliRegion) {
-		$sdkRegion = $cliRegion
-		Initialize-AWSDefaultConfiguration -Region $sdkRegion
-		Initialize-AWSDefaultConfiguration -ProfileName $Name -Region $sdkRegion
-        Set-DefaultAWSRegion $sdkRegion -Scope Global
-        Set-Variable -Name StoredAWSRegion -Value $StoredAWSRegion -Scope Global -Option None -Visibility Public # a work-around for the AWS PS Toolkit bug https://forums.aws.amazon.com/thread.jspa?threadID=259761
-    }elseif ($sdkRegion) {
-        $cliRegion = $sdkRegion # Since we are in PS, its Region setting overrides cli region
-        aws configure set region $cliRegion --profile $Name | Out-Host
-    }
-
-    $env:AWS_PROFILE = ($isDefaultProfile) ? "" : $Name # Sets current CLI profile. Profile must exist, if not ""
-
-    if($Persist -And ($Persist.ToLowerInvariant() -ne "false")) {
-        [System.Environment]::SetEnvironmentVariable("AWS_PROFILE", $env:AWS_PROFILE, [System.EnvironmentVariableTarget]::User)
-    }
-
-    Write-Host "Set current AWS profile to `"$Name`""
-}
-
-#Debug
-#Set-AWSProfile "default"
-
-if($env:AWS_PROFILE) {
-	Set-AWSProfile $env:AWS_PROFILE
-}else {
-	Set-AWSProfile "default"
-}
 function prompt 
 {
     $savedLASTEXITCODE = $LASTEXITCODE
