@@ -77,8 +77,6 @@ class SdkContext : AwsContext
     static [void] SetRegion([string] $region) 
     {
         Set-DefaultAWSRegion $region -Scope Global
-        [string] $sdkRegion = Get-VarValue "StoredAWSRegion"
-        Set-Variable -Name StoredAWSRegion -Value $sdkRegion -Scope Global -Option None -Visibility Public # a work-around for the AWS PS Toolkit bug https://forums.aws.amazon.com/thread.jspa?threadID=259761
     }
 
     static [void] SetProfile([string] $profileName) {
@@ -87,9 +85,7 @@ class SdkContext : AwsContext
 
     static [void] SetProfile([string] $profileName, [bool] $setEverywhere) 
     {
-        Set-AWSCredential -ProfileName $profileName # Sets surrent SDK/PS profile
-        [string] $sdkProfile = Get-VarValue "StoredAWSCredentials"
-        Set-Variable -Name StoredAWSCredentials -Value $sdkProfile -Scope Global -Option None -Visibility Public # a work-around for the AWS PS Toolkit bug https://forums.aws.amazon.com/thread.jspa?threadID=259761
+        Set-AWSCredential -ProfileName $profileName -Scope Global # Sets surrent SDK/PS profile
     }
 
     [void] SetCurrentRegion() 
