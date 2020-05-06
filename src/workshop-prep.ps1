@@ -183,6 +183,9 @@ function InitWorkshop {
     # Set WS Visual Studio Toolkit region to the current
     ChangeVsToolkitCurrentRegion $awsRegion
 
+    # KLUDGE ALERT: Re-initializing AWS SDK "default" credentials profile in atempt to work around the missing SDK "default" profile
+    Set-AWSCredential -AccessKey (aws configure get aws_access_key_id) -SecretKey (aws configure get aws_secret_access_key) -StoreAs default
+
     $now = get-date
     "Workshop dev box initialization has finished on $now" 
 }
