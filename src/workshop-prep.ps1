@@ -180,6 +180,9 @@ function InitWorkshop {
 
     Pop-Location
 
+    # Set WS Visual Studio Toolkit region to the current
+    ChangeVsToolkitCurrentRegion $awsRegion
+
     $now = get-date
     "Workshop dev box initialization has finished on $now" 
 }

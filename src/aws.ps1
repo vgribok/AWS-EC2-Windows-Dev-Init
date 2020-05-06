@@ -419,6 +419,28 @@ function DeleteEcrRepos {
     }
 }
 
+function ChangeVsToolkitCurrentRegion {
+    param (
+        [Parameter(mandatory=$true)] [string] $newRegion
+    )
+
+    if(-not $IsWindows) {
+        return
+    }
+
+    $vstoolkitsettings = Get-Content -Raw -Path "$($env:LOCALAPPDATA)/AWSToolkit/MiscSettings.json" | ConvertFrom-Json
+    [string] $prevRegion = $vstoolkitsettings.MiscSettings.lastselectedregion
+
+    if($prevRegion -eq $newRegion) {
+        return
+    }
+
+    $vstoolkitsettings.MiscSettings.lastselectedregion = $newRegion
+    $vstoolkitsettings | ConvertTo-Json | Out-File $vstoolkitsettingsFilePath
+    
+    Write-Information "Changed AWS Visual Studio Toolkit region selection from `"$prevRegion`" to `"$newRegion`"."
+}
+
 #$hkw = TerminateInstanceByName(MakeLinuxInstanceName)
 #SetDockerHostUserEnvVar
 
