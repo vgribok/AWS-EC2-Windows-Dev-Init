@@ -428,7 +428,9 @@ function ChangeVsToolkitCurrentRegion {
         return
     }
 
-    $vstoolkitsettings = Get-Content -Raw -Path "$($env:LOCALAPPDATA)/AWSToolkit/MiscSettings.json" | ConvertFrom-Json
+    [string] $vstoolkitsettingsFilePath = "$($env:LOCALAPPDATA)/AWSToolkit/MiscSettings.json"
+
+    $vstoolkitsettings = Get-Content -Raw -Path $vstoolkitsettingsFilePath | ConvertFrom-Json
     [string] $prevRegion = $vstoolkitsettings.MiscSettings.lastselectedregion
 
     if($prevRegion -eq $newRegion) {
