@@ -259,5 +259,5 @@ if($redirectToLog)
         -awsRegion $awsRegion
 }
 
-Set-DefaultAWSRegion -Region $((Get-EC2InstanceMetadata -category Region).SystemName) -Scope Global
-Set-AWSCredential -ProfileName default -Scope Global
+#Set-DefaultAWSRegion -Region $((Get-EC2InstanceMetadata -category Region).SystemName) -Scope Global
+#Set-AWSCredential -ProfileName default -Scope Global
