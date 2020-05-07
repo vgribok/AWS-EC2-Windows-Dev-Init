@@ -12,7 +12,7 @@ Set-Location ([System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Path))
 . ../sys.ps1
 Pop-Location
 
-ConfigureCurrentAwsRegion -profileName $null
+ConfigureCurrentAwsRegion
 
 # Delete CFN stacks created in the course of the lab
 $workshopCfnStacks = CoalesceWithEnvVar $workshopCfnStacks "UNICORN_LAB_AWS_RIP_CFNS"

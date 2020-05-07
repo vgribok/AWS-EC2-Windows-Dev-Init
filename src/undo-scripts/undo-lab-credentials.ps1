@@ -10,9 +10,9 @@ Set-Location ([System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Path))
 . ../aws.ps1
 Pop-Location
 
-ConfigureCurrentAwsRegion -profileName $null
-
 $awsRegion = GetDefaultAwsRegionName
+
+ConfigureCurrentAwsRegion $awsRegion
 
 [string] $iamUserName = MakeLabUserName -tempIamUserPrefix $tempIamUserPrefix -awsRegion $awsRegion
 
@@ -31,4 +31,4 @@ Write-Information "Deleted IAM user `"$iamUserName`""
 # DISKPART (scary! I know) for a little bit. Just let it finish, don't worry about it.
 InitializeEC2Instance 
 
-ConfigureCurrentAwsRegion -profileName $null
+ConfigureCurrentAwsRegion $awsRegion

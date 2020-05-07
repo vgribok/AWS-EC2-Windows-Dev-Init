@@ -98,23 +98,15 @@ function GetDefaultAwsRegionName
 
 function ConfigureCurrentAwsRegion {
     param (
-        [string] $awsRegion,
-        [string] $profileName = "default"
+        [string] $awsRegion
     )
 
-    if(-Not $awsRegion)
-    {
+    if(-Not $awsRegion) {
         $awsRegion = GetDefaultAwsRegionName
     }
 
     aws configure set region $awsRegion | Out-Host
-    if($profileName)
-    {
-        Initialize-AWSDefaultConfiguration -ProfileName $profileName -Region $awsRegion
-    }else 
-    {
-        Initialize-AWSDefaultConfiguration -Region $awsRegion
-    }
+    Set-DefaultAWSRegion -Region $awsRegion -Scope Global
 
     Write-Information "Set current AWS region to `"$awsRegion`""
 }
@@ -125,17 +117,18 @@ function ConfigureIamUserCredentialsOnTheSystem {
         [string] $awsRegion
     )
 
-    # Store credentials for AWS SDK and VS Toolkit
-    Set-AWSCredential -AccessKey $accessKeyInfo.AccessKeyId -SecretKey $accessKeyInfo.SecretAccessKey -StoreAs default
-    Write-Information "Set user `"$($awsAccessKeyInfo.UserName)`" (AccessKey `"$($accessKeyInfo.AccessKeyId)`") as current for AWS SDK and Visual Studio Toolkit"
-
-    ConfigureCurrentAwsRegion($awsRegion)
-
     # Store credentials in ~/.aws "credentials" and "config" files
     aws configure set aws_access_key_id $accessKeyInfo.AccessKeyId | Out-Host
     aws configure set aws_secret_access_key $accessKeyInfo.SecretAccessKey | Out-Host
     aws configure set output json | Out-Host
     Write-Information "Set user `"$($awsAccessKeyInfo.UserName)`" (AccessKey `"$($accessKeyInfo.AccessKeyId)`") as current for `"aws`" cli"
+
+    # Store credentials for AWS SDK and VS Toolkit
+    Set-AWSCredential -AccessKey $accessKeyInfo.AccessKeyId -SecretKey $accessKeyInfo.SecretAccessKey -StoreAs default
+    Set-AWSCredential -ProfileName default -Scope Global
+    Write-Information "Set user `"$($awsAccessKeyInfo.UserName)`" (AccessKey `"$($accessKeyInfo.AccessKeyId)`") as current for AWS SDK and Visual Studio Toolkit"
+
+    ConfigureCurrentAwsRegion $awsRegion
 }
 
 function DeleteCfnStack {
@@ -186,12 +179,11 @@ function RemoveCodeCommitCredentialsForIamUser {
 }
 
 function RemoveAccessKeyCredentialsFromTheSystem {
-    if($IsWindows)
-    {   # Removes AWS SDK and VS Toolkit credentials created by the Set-AWSCredential cmdlet
-        [string] $awsSdkCredFilePath = "$($env:LOCALAPPDATA)/AWSToolkit/RegisteredAccounts.json"
-        Remove-Item $awsSdkCredFilePath -Force -ErrorAction SilentlyContinue
-        Write-Information "Deleted AWS credentials file for AWS SDK: `"$awsSdkCredFilePath`""
-    }
+
+    # remove "default" SDK credentials profile
+    Remove-AWSCredentialProfile -ProfileName default -Force
+    Write-Information "Removed `"default`" SDK credentials profile"
+
     # Remove credentials created using "aws configure" CLI
     Remove-Item -Recurse -Force "~/.aws" -ErrorAction SilentlyContinue
     Write-Information "Deleted `"~/.aws`" directory with AWS user credentials"
