@@ -188,6 +188,8 @@ function InitWorkshop {
     Write-Information "Current AWS credential profiles:"
     Get-AWSCredential -ListProfileDetail | Format-Table
 
+    Write-Information "Current AWS region is: `"$((Get-DefaultAWSRegion).Region)`""
+
     $now = get-date
     "Workshop dev box initialization has finished on $now" 
 }
