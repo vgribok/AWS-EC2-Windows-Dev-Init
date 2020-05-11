@@ -124,7 +124,7 @@ function ConfigureIamUserCredentialsOnTheSystem {
     Write-Information "Set user `"$($awsAccessKeyInfo.UserName)`" (AccessKey `"$($accessKeyInfo.AccessKeyId)`") as current for `"aws`" cli"
 
     # Store credentials for AWS SDK and VS Toolkit
-    #Set-AWSCredential -AccessKey $accessKeyInfo.AccessKeyId -SecretKey $accessKeyInfo.SecretAccessKey -StoreAs default
+    Set-AWSCredential -AccessKey $accessKeyInfo.AccessKeyId -SecretKey $accessKeyInfo.SecretAccessKey -StoreAs default
     Set-AWSCredential -ProfileName default -Scope Global
     Write-Information "Set `"default`" credetials profile as current for AWS SDK and Visual Studio Toolkit"
 
