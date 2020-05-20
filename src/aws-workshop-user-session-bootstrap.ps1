@@ -1,16 +1,11 @@
 <#
 This script is invoked by Windows Startup folder each time suer logs in
 #>
+param(
+    [string] $scriptDirectoryName = "~/AWS-EC2-Windows-Dev-Init/src"
+)
 
-Import-Module awspowershell.netcore
-
-function InitUserSession {
-    # Copy AWS CLI credentials to AWS SDK credentials store
-    Set-AWSCredential -AccessKey (aws configure get aws_access_key_id --profile default) -SecretKey (aws configure get aws_secret_access_key --profile default) -StoreAs default
-    
-    # Diagnostic output
-    Write-Information "Retrieving current AWS SDK credentials `"default`" profile:"
-    Get-AWSCredential -ProfileName default
-}
-
-InitUserSession *> C:\aws-workshop-user-session-init.log
+Push-Location
+Set-Location $scriptDirectoryName
+& ./user-session-init.ps1
+Pop-Location
