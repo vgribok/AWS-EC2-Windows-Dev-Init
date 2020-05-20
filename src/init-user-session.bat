@@ -1,0 +1,1 @@
+pwsh.exe -File "%USERPROFILE%\AWS-EC2-Windows-Dev-Init\src\user-session-init.ps1"
