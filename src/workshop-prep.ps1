@@ -210,7 +210,7 @@ function InitWorkshop {
     if($userScriptDir) {
         "Main workshop initialization has finished on $(get-date)." 
         Push-Location
-        $userScriptDir = Join-Path $workDirectory $userScriptDir "src"
+        $userScriptDir = Join-Path $(Resolve-Path $workDirectory) $userScriptDir "src"
         Set-Location $userScriptDir
         [string] $eventName = "on-after-init"
         Write-Information "$(Get-Date) Starting executing $eventName custom script from `"$userScriptDir/main.ps1`""
