@@ -11,6 +11,7 @@ Import-Module awspowershell.netcore
 Push-Location
 Set-Location $scriptLocation
 . ./git.ps1
+. ./aws.ps1
 . ./sys.ps1
 Pop-Location
 
@@ -18,6 +19,10 @@ Pop-Location
 Set-AWSCredential -AccessKey (aws configure get aws_access_key_id --profile default) -SecretKey (aws configure get aws_secret_access_key --profile default) -StoreAs default
 Set-AWSCredential -ProfileName default -Scope Global # This and preceding code needs to run outside of any function
 Write-Information "Set `"default`" credetials profile as current for AWS SDK and Visual Studio Toolkit"
+
+[string] $awsRegion = GetDefaultAwsRegionName
+Set-DefaultAWSRegion -Region $awsRegion -Scope Global
+Write-Information "Set default AWS SDK region to `"$(Get-DefaultAWSRegion)`""
 
 function InitUserSession {
     param(
