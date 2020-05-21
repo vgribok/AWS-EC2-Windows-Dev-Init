@@ -12,7 +12,7 @@ function InitUserSession {
     Push-Location
     Set-Location $scriptLocation
     . ./git.ps1
-    . ./aws.ps1
+#    . ./aws.ps1
     . ./sys.ps1
     Pop-Location
 
@@ -23,6 +23,7 @@ function InitUserSession {
     Write-Information "Retrieving current AWS SDK credentials `"default`" profile:"
     Get-AWSCredential -ProfileName default
 
+    # Invoke custom user script, if supplied
     $afterLoginScriptGitUrl = CoalesceWithEnvVar $afterLoginScriptGitUrl "UNICORN_LAB_AFTER_LOGIN_SCRIPT_GIT_URL"
     if($afterLoginScriptGitUrl) {
         [string] $projectDirectoryName = DirectoryNameFromGitHubUrl($afterLoginScriptGitUrl)
@@ -38,5 +39,5 @@ function InitUserSession {
 
 InitUserSession `
     -afterLoginScriptGitUrl $afterLoginScriptGitUrl `
-    -workDirectory $workDirectory #`
-#    *> C:\aws-workshop-user-session-init.log
+    -workDirectory $workDirectory `
+   *> C:\aws-workshop-user-session-init.log
