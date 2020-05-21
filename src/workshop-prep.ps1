@@ -189,7 +189,7 @@ function InitWorkshop {
         Set-Location $workDirectory
         Write-Information "Getting on-login custom script from `"$afterLoginScriptGitUrl`" (`"$afterLoginScriptGitBranch`")"
         $retVal = GitCloneAndCheckout -remoteGitUrl $afterLoginScriptGitUrl -gitBranchName $afterLoginScriptGitBranch
-        $userScriptDir = CleanupRetVal($retVal) 
+        $userScriptDir = CleanupRetVal $retVal 
     }
 
     Pop-Location
@@ -210,7 +210,7 @@ function InitWorkshop {
     if($userScriptDir) {
         "Main workshop initialization has finished on $(get-date)." 
         Push-Location
-        $userScriptDir = Join-Path $userScriptDir "src"
+        $userScriptDir = Join-Path $workDirectory $userScriptDir "src"
         Set-Location $userScriptDir
         [string] $eventName = "on-after-init"
         Write-Information "$(Get-Date) Starting executing $eventName custom script from `"$userScriptDir/main.ps1`""
