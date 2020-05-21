@@ -26,10 +26,12 @@ function InitUserSession {
     # Invoke custom user script, if supplied
     $afterLoginScriptGitUrl = CoalesceWithEnvVar $afterLoginScriptGitUrl "UNICORN_LAB_AFTER_LOGIN_SCRIPT_GIT_URL"
     if($afterLoginScriptGitUrl) {
-        [string] $projectDirectoryName = DirectoryNameFromGitHubUrl($afterLoginScriptGitUrl)
-        [string] $userScriptDirectory = [System.IO.Path]::Join($workDirectory, $projectDirectoryName, "/src") # Custom script should reside in the /src directory relative to the repo root
         Push-Location
-        Set-Location $userScriptDirectory
+        Set-Location $workDirectory
+        [string] $projectDirectoryName = DirectoryNameFromGitHubUrl($afterLoginScriptGitUrl)
+        Set-Location $projectDirectoryName
+        Set-Location "./src"
+        [string] $userScriptDirectory = Get-Location
         Write-Information "$(Get-Date) Starting executing on-login custom script from `"$userScriptDirectory/main.ps1`""
         & ./main.ps1 # Custom script entry point has to be "main.ps1"
         Write-Information "$(Get-Date) Completed executing on-login custom script from `"$userScriptDirectory/main.ps1`""
