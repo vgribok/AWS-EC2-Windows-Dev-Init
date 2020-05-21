@@ -184,10 +184,12 @@ function InitWorkshop {
         ConfigureGitSettings -gitUsername $iamUserName -projectRootDirPath $sampleAppPath -helper "!aws codecommit credential-helper $@"
     }
 
+    [string] $userScriptDir
     if($afterLoginScriptGitUrl) {
         Set-Location $workDirectory
         Write-Information "Getting on-login custom script from `"$afterLoginScriptGitUrl`" (`"$afterLoginScriptGitBranch`")"
-        $ignore = GitCloneAndCheckout -remoteGitUrl $afterLoginScriptGitUrl -gitBranchName $afterLoginScriptGitBranch
+        $retVal = GitCloneAndCheckout -remoteGitUrl $afterLoginScriptGitUrl -gitBranchName $afterLoginScriptGitBranch
+        $userScriptDir = CleanupRetVal($retVal) 
     }
 
     Pop-Location
@@ -205,8 +207,19 @@ function InitWorkshop {
     Write-Information "Running `"Get-AWSCredential -ProfileName default`":"
     Get-AWSCredential -ProfileName default
 
-    $now = get-date
-    "Workshop dev box initialization has finished on $now" 
+    if($userScriptDir) {
+        "Main workshop initialization has finished on $(get-date)." 
+        Push-Location
+        $userScriptDir = Join-Path $userScriptDir "src"
+        Set-Location $userScriptDir
+        [string] $eventName = "on-after-init"
+        Write-Information "$(Get-Date) Starting executing $eventName custom script from `"$userScriptDir/main.ps1`""
+        & ./main.ps1 -eventName $eventName # Custom script entry point has to be "main.ps1"
+        Write-Information "$(Get-Date) Completed executing $eventName custom script from `"$userScriptDir/main.ps1`""
+        Pop-Location
+    }
+
+    "Workshop dev box initialization has finished on $(get-date)" 
 }
 
 if($redirectToLog)
