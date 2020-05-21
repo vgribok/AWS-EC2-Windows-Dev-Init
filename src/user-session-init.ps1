@@ -48,7 +48,7 @@ function Invoke-UserScript {
     if($afterLoginScriptGitUrl) {
         Push-Location
         [string] $projectDirectoryName = DirectoryNameFromGitHubUrl($afterLoginScriptGitUrl)
-        [string] $userScriptDirectory = [System.IO.Path]::Join((Resolve-Path $workDirectory), $projectDirectoryName, "src")
+        [string] $userScriptDirectory = Join-Path (Resolve-Path $workDirectory) $projectDirectoryName "src"
         Set-Location $userScriptDirectory
         [string] $eventName = "on-after-user-login"
         Write-Information "$(Get-Date) Starting executing $eventName custom script from `"$userScriptDirectory/main.ps1`""
