@@ -1,3 +1,8 @@
+param(
+    [string] $afterLoginScriptGitUrl,
+    [string] $workDirectory = "~/AWS-workshop-assets"
+)
+
 Import-Module awspowershell.netcore
 
 [string] $scriptLocation = [System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Path)
@@ -5,7 +10,7 @@ Import-Module awspowershell.netcore
 function InitUserSession {
     param(
         [string] $afterLoginScriptGitUrl,
-        [string] $workDirectory = "~/AWS-workshop-assets"
+        [string] $workDirectory
     )
 
     # Include scripts with utility functions
