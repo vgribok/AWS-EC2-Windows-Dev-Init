@@ -19,8 +19,8 @@ param(
     [string] $useDockerDamonLinuxEc2, # UNICORN_LAB_LINUX_DOCKER_START env var
     [string] $dockerDaemonLinuxAmi, # UNICORN_LAB_LINUX_DOCKER_AMI env var
     [string] $dockerDaemonLinuxInstanceSize, # UNICORN_LAB_LINUX_DOCKER_INSTANCE_SIZE env var
-    [string] $afterLoginScriptGitUrl, # UNICORN_LAB_AFTER_LOGIN_SCRIPT_GIT_URL env var
-    [string] $afterLoginScriptGitBranch, # UNICORN_LAB_AFTER_LOGIN_SCRIPT_GIT_BRANCH env var
+    [string] $afterLoginScriptGitUrl, # UNICORN_LAB_USER_SCRIPT_GIT_URL env var
+    [string] $afterLoginScriptGitBranch, # UNICORN_LAB_USER_SCRIPT_GIT_BRANCH env var
 
     # This group of parameters are likely to stay unchanged from one lab to another
     [string] $workDirectory = "~/AWS-workshop-assets",
@@ -92,8 +92,8 @@ function InitWorkshop {
     $useDockerDamonLinuxEc2 = CoalesceWithEnvVar $useDockerDamonLinuxEc2 "UNICORN_LAB_LINUX_DOCKER_START" $null # Set to "true" to start remote Docker daemon instance
     $dockerDaemonLinuxAmi = CoalesceWithEnvVar $dockerDaemonLinuxAmi "UNICORN_LAB_LINUX_DOCKER_AMI" # Example: "ami-XXXXXXXXXXXX"
     $dockerDaemonLinuxInstanceSize = CoalesceWithEnvVar $dockerDaemonLinuxInstanceSize "UNICORN_LAB_LINUX_DOCKER_INSTANCE_SIZE" "t3a.small"
-    $afterLoginScriptGitUrl = CoalesceWithEnvVar $afterLoginScriptGitUrl "UNICORN_LAB_AFTER_LOGIN_SCRIPT_GIT_URL"
-    $afterLoginScriptGitBranch = CoalesceWithEnvVar $afterLoginScriptGitBranch "UNICORN_LAB_AFTER_LOGIN_SCRIPT_GIT_BRANCH" "master"
+    $afterLoginScriptGitUrl = CoalesceWithEnvVar $afterLoginScriptGitUrl "UNICORN_LAB_USER_SCRIPT_GIT_URL"
+    $afterLoginScriptGitBranch = CoalesceWithEnvVar $afterLoginScriptGitBranch "UNICORN_LAB_USER_SCRIPT_GIT_BRANCH" "master"
 
     $awsRegion = Coalesce $awsRegion (GetDefaultAwsRegionName)
     Write-Information "Current AWS region is `"$awsRegion`""
