@@ -19,6 +19,8 @@ param(
     [string] $useDockerDamonLinuxEc2, # UNICORN_LAB_LINUX_DOCKER_START env var
     [string] $dockerDaemonLinuxAmi, # UNICORN_LAB_LINUX_DOCKER_AMI env var
     [string] $dockerDaemonLinuxInstanceSize, # UNICORN_LAB_LINUX_DOCKER_INSTANCE_SIZE env var
+    [string] $afterLoginScriptGitUrl, # UNICORN_LAB_AFTER_LOGIN_SCRIPT_GIT_URL env var
+    [string] $afterLoginScriptGitBranch, # UNICORN_LAB_AFTER_LOGIN_SCRIPT_GIT_BRANCH env var
 
     # This group of parameters are likely to stay unchanged from one lab to another
     [string] $workDirectory = "~/AWS-workshop-assets",
@@ -47,7 +49,9 @@ function InitWorkshop {
         [string] $useDockerDamonLinuxEc2,
         [string] $dockerDaemonLinuxAmi,
         [string] $dockerDaemonLinuxInstanceSize,
-        
+        [string] $afterLoginScriptGitUrl, 
+        [string] $afterLoginScriptGitBranch, 
+            
         [string] $workDirectory,
         [bool] $isDebug,
         [string] $systemUserName,
@@ -61,7 +65,7 @@ function InitWorkshop {
     $now = get-date
     "AWS lab initialization scripts started on $now"
 
-    Import-Module awspowershell.netcore # Todo: add this to system's PowerShell profile
+    Import-Module awspowershell.netcore 
 
     # Include scripts with utility functions
     Push-Location
@@ -88,6 +92,8 @@ function InitWorkshop {
     $useDockerDamonLinuxEc2 = CoalesceWithEnvVar $useDockerDamonLinuxEc2 "UNICORN_LAB_LINUX_DOCKER_START" $null # Set to "true" to start remote Docker daemon instance
     $dockerDaemonLinuxAmi = CoalesceWithEnvVar $dockerDaemonLinuxAmi "UNICORN_LAB_LINUX_DOCKER_AMI" # Example: "ami-XXXXXXXXXXXX"
     $dockerDaemonLinuxInstanceSize = CoalesceWithEnvVar $dockerDaemonLinuxInstanceSize "UNICORN_LAB_LINUX_DOCKER_INSTANCE_SIZE" "t3a.small"
+    $afterLoginScriptGitUrl = CoalesceWithEnvVar $afterLoginScriptGitUrl "UNICORN_LAB_AFTER_LOGIN_SCRIPT_GIT_URL"
+    $afterLoginScriptGitBranch = CoalesceWithEnvVar $afterLoginScriptGitBranch "UNICORN_LAB_AFTER_LOGIN_SCRIPT_GIT_BRANCH" "master"
 
     $awsRegion = Coalesce $awsRegion (GetDefaultAwsRegionName)
     Write-Information "Current AWS region is `"$awsRegion`""
@@ -178,6 +184,12 @@ function InitWorkshop {
         ConfigureGitSettings -gitUsername $iamUserName -projectRootDirPath $sampleAppPath -helper "!aws codecommit credential-helper $@"
     }
 
+    if($afterLoginScriptGitUrl) {
+        Set-Location $workDirectory
+        Write-Information "Getting on-login custom script from `"$afterLoginScriptGitUrl`" (`"$afterLoginScriptGitBranch`")"
+        $ignore = GitCloneAndCheckout -remoteGitUrl $afterLoginScriptGitUrl -gitBranchName $afterLoginScriptGitBranch
+    }
+
     Pop-Location
 
     # Set WS Visual Studio Toolkit region to the current
@@ -224,6 +236,8 @@ if($redirectToLog)
         -useDockerDamonLinuxEc2 $useDockerDamonLinuxEc2 `
         -dockerDaemonLinuxAmi $dockerDaemonLinuxAmi `
         -dockerDaemonLinuxInstanceSize $dockerDaemonLinuxInstanceSize `
+        -afterLoginScriptGitUrl $afterLoginScriptGitUrl `
+        -afterLoginScriptGitBranch $afterLoginScriptGitBranch `
         `
         -workDirectory $workDirectory `
         -isDebug $isDebug `
@@ -251,6 +265,8 @@ if($redirectToLog)
         -useDockerDamonLinuxEc2 $useDockerDamonLinuxEc2 `
         -dockerDaemonLinuxAmi $dockerDaemonLinuxAmi `
         -dockerDaemonLinuxInstanceSize $dockerDaemonLinuxInstanceSize `
+        -afterLoginScriptGitUrl $afterLoginScriptGitUrl `
+        -afterLoginScriptGitBranch $afterLoginScriptGitBranch `
         `
         -workDirectory $workDirectory `
         -isDebug $isDebug `
