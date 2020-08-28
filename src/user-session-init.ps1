@@ -23,7 +23,7 @@ function WaitForMainInitScriptToComplete {
     while($true)
     {
         [int] $i = 1
-        Get-Content c:\aws-workshop-init-script.log -tail 3 -wait | `
+        Get-Content c:\aws-workshop-init-script.log -tail -wait | `
         Select-Object { `
             Write-Progress -Activity 'SYSTEM INITIALIZATION IN PROGRESS! -------------- SYSTEM INITIALIZATION IN PROGRESS! -------------- SYSTEM INITIALIZATION IN PROGRESS!' `
                 -Status "PLEASE WAIT FOR THIS MSSAGE TO GO AWAY BEFORE DOING ENYTHING! ($i)"; `
