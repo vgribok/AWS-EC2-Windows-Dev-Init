@@ -3,9 +3,9 @@ Powershell profile implementing Set-AWSProfile and Set-AWSRegion commands keepin
 profiles and current region in sync. Lab boxes should have this script in there All Users/All Host PS profile 
 (https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_profiles)
 #>
+$InformationPreference = "Continue"
 
 Write-Host "Initializing PowerShell profile. It may take a few seconds.."
-$InformationPreference = "Continue"
 Import-Module awspowershell.netcore
 
 function Get-VarValue {

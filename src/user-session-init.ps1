@@ -1,3 +1,7 @@
+<#
+This script is started on user login by a shortcut in the "Startup" directory to the batch file on C:\.
+#>
+
 param(
     [string] $afterLoginScriptGitUrl,
     [string] $workDirectory = "~/AWS-workshop-assets"
@@ -14,6 +18,24 @@ Set-Location $scriptLocation
 . ./aws.ps1
 . ./sys.ps1
 Pop-Location
+
+function WaitForMainInitScriptToComplete {
+    [int] $i = 1
+    Get-Content c:\aws-workshop-init-script.log -tail 3 -wait | `
+    Select-Object { `
+        Write-Progress -Activity 'SYSTEM INITIALIZATION IN PROGRESS! -------------- SYSTEM INITIALIZATION IN PROGRESS! -------------- SYSTEM INITIALIZATION IN PROGRESS!' `
+            -Status "PLEASE WAIT FOR THIS MSSAGE TO GO AWAY BEFORE DOING ENYTHING! ($i)"; `
+        Start-Sleep -Seconds 1; `
+        $_; `
+    } | `
+    Where-Object { `
+        $i++; `
+        $_ -match "Workshop dev box initialization has finished" `
+    } | `
+    ForEach-Object { break; }
+}
+
+WaitForMainInitScriptToComplete
 
 # Copy AWS CLI credentials to AWS SDK credentials store.
 Set-AWSCredential -AccessKey (aws configure get aws_access_key_id --profile default) -SecretKey (aws configure get aws_secret_access_key --profile default) -StoreAs default
