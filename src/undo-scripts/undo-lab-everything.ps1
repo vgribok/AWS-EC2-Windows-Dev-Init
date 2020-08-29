@@ -18,6 +18,7 @@ if(-Not $cleanupConfirmed)
 {
     Write-Host -NoNewline "Please choose an option:`n`nPress 1 if you need to clean up and plan to either shutdown or reboot the instance afterwards.`nPress 2 for regular cleanup. Enables re-initializing the system by running init scripts manually.`nClose this window to cancel cleaup.`n`n/1/2/x>"
     $cleanupConfirmed = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown").Character.ToString()
+    Write-Host $cleanupConfirmed
 }
 
 switch($cleanupConfirmed.ToLowerInvariant())
@@ -26,6 +27,8 @@ switch($cleanupConfirmed.ToLowerInvariant())
     2 { $cleanupConfirmed = "regular" }
     Default { return }
 }
+
+
 
 $scriptLocation = [System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Path)
 
@@ -43,7 +46,7 @@ function Cleanup {
     )
 
     $now = get-date
-    Write-Information "Cleaup started on $now"
+    Write-Information "Cleaup ($cleanupConfirmed) started on $now"
     
     Push-Location
     
