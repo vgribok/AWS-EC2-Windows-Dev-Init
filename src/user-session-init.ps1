@@ -7,26 +7,30 @@ param(
     [string] $workDirectory = "~/AWS-workshop-assets"
 )
 
-Import-Module awspowershell.netcore
+function ShowInitInProgressMessage {
+    param ($progressMessage)
+    
+    Write-Progress `
+        -Activity 'SYSTEM INITIALIZATION IN PROGRESS! -------------- SYSTEM INITIALIZATION IN PROGRESS! -------------- SYSTEM INITIALIZATION IN PROGRESS!' `
+        -Status "PLEASE WAIT FOR THIS MSSAGE TO GO AWAY BEFORE DOING ANYTHING! ($progressMessage)";
+}
 
-[string] $scriptLocation = [System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Path)
-
-# Include scripts with utility functions
-Push-Location
-Set-Location $scriptLocation
-. ./git.ps1
-. ./aws.ps1
-. ./sys.ps1
-Pop-Location
+function WaitForInitScriptLogFileCreation {
+    $i = 1
+    while (-Not (Test-Path c:\aws-workshop-init-script.log -PathType Leaf)) {
+        Start-Sleep -Seconds 1
+        ShowInitInProgressMessage "waiting for init script to start - $i"
+        $i++
+    }    
+}
 
 function WaitForMainInitScriptToComplete {
     while($true)
     {
         [int] $i = 1
-        Get-Content c:\aws-workshop-init-script.log -tail 10000 -wait | `
+        Get-Content c:\aws-workshop-init-script.log -tail 20000 -wait | `
         Select-Object { `
-            Write-Progress -Activity 'SYSTEM INITIALIZATION IN PROGRESS! -------------- SYSTEM INITIALIZATION IN PROGRESS! -------------- SYSTEM INITIALIZATION IN PROGRESS!' `
-                -Status "PLEASE WAIT FOR THIS MSSAGE TO GO AWAY BEFORE DOING ANYTHING! ($i)"; `
+            ShowInitInProgressMessage "init script log line count $i" `
             # Start-Sleep -Seconds 1; `
             $_; `
         } | `
@@ -38,7 +42,20 @@ function WaitForMainInitScriptToComplete {
     }
 }
 
+WaitForInitScriptLogFileCreation
 WaitForMainInitScriptToComplete
+
+Import-Module awspowershell.netcore
+
+[string] $scriptLocation = [System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Path)
+
+# Include scripts with utility functions
+Push-Location
+Set-Location $scriptLocation
+. ./git.ps1
+. ./aws.ps1
+. ./sys.ps1
+Pop-Location
 
 # Copy AWS CLI credentials to AWS SDK credentials store.
 Set-AWSCredential -AccessKey (aws configure get aws_access_key_id --profile default) -SecretKey (aws configure get aws_secret_access_key --profile default) -StoreAs default
