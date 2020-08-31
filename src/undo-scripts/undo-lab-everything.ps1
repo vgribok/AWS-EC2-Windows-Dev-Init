@@ -28,7 +28,7 @@ switch($cleanupConfirmed.ToLowerInvariant())
     Default { return }
 }
 
-
+Write-Host "Conducting `"$cleanupConfirmed`" cleanup."
 
 $scriptLocation = [System.IO.Path]::GetDirectoryName($myInvocation.MyCommand.Path)
 
